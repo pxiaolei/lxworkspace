@@ -26,26 +26,9 @@ analysis = load("partner_analysis_test", ".workbuddy/skills/lx-yidongfenxi/scrip
 init = load("partner_init_test", ".workbuddy/skills/lx-init/scripts/init_workspace.py")
 update = load("partner_update_test", ".workbuddy/skills/lx-update/scripts/update_workspace.py")
 dispatcher = load("partner_dispatcher_test", "tools/run_skill.py")
-entries = load("partner_entries_test", "tools/generate_workbuddy_entries.py")
 
 
 class PartnerGatesTest(unittest.TestCase):
-    def test_workbuddy_loaders_are_exact_and_do_not_overwrite_drift(self):
-        with contextlib.redirect_stdout(io.StringIO()):
-            self.assertEqual(entries.main(["--check"]), 0)
-        self.assertEqual(entries.ALIASES["lx-shujuku"], "lx_shujuku")
-        self.assertNotIn("lxx_share", entries.ALIASES)
-        with tempfile.TemporaryDirectory() as tmp, patch.object(entries, "ROOT", Path(tmp)):
-            canonical = Path(tmp) / ".workbuddy/skills/lx_shujuku/SKILL.md"
-            canonical.parent.mkdir(parents=True)
-            canonical.write_text('---\nname: lx_shujuku\ndescription: "fixture"\n---\n', encoding="utf-8")
-            loader = Path(tmp) / ".codebuddy/skills/lx-shujuku/SKILL.md"
-            loader.parent.mkdir(parents=True)
-            loader.write_text("hand edited", encoding="utf-8")
-            with self.assertRaises(ValueError):
-                entries.main([])
-            self.assertEqual(loader.read_text(encoding="utf-8"), "hand edited")
-
     def test_dispatcher_does_not_inherit_other_workspace_credentials(self):
         from unittest.mock import MagicMock
         process = MagicMock(returncode=0)

@@ -8,8 +8,7 @@
 
 ## 文件夹与命名
 
-- `.workbuddy/skills/<name>/`：代码、模板、能力说明、测试和路由信息。
-- `.codebuddy/skills/<name>/SKILL.md`：当前 WorkBuddy 官方项目加载目录的薄入口，只指向 `.workbuddy` 中九个用户能力的真源契约；不复制代码、素材或配置。数据库入口别名为 `lx-shujuku`，真源名仍为 `lx_shujuku`。内部 `lxx_share` 不建用户加载入口。适配文件由 `tools/generate_workbuddy_entries.py` 生成和校验。
+- `.workbuddy/skills/<name>/`：唯一Skill目录，保存代码、模板、能力说明、测试和路由信息，直接由WorkBuddy加载。用户已于2026-10-21确认现有目录可用；不维护额外转发入口或加载别名。内部`lxx_share`不作为用户业务能力。
 - `config/fog_config.yaml`：本机公司数据库与图片服务设置；`config/lx-wenda.json`：本机问答设置。仅 example 文件参与版本更新。
 - `.workbuddy/skills/lx-haibao/brands/`、`brand-assets/<brand_id>/`：官方预设配置、Logo/二维码按 `contracts/partner-brand-presets.json` 精确白名单公开，随仓安装和更新，伙伴无需另加。其他自定义品牌资料忽略并保护，不自动覆盖。配置/素材与对应通用模板的关联必须通过海报检查。
 - `workspace/00todo/YYYYMMDD_HHMMSS_task/`：待归类输入，处理后按流程归类；`存档/` 移入前确认。
@@ -27,11 +26,13 @@
 
 ## Skill 与更新
 
-真源 `.workbuddy/skills` 的 frontmatter 仅 name/description；每项具备 agents/openai.yaml 和唯一执行契约。`.codebuddy` 薄入口仅复用真源契约和路由，不重复维护契约或 agents 文件。认证/配置/更新及内部基础库禁止隐式 apply；可发现的业务 Skill 默认进入检查/preview。
+真源 `.workbuddy/skills` 的 frontmatter 仅 name/description；每项具备 agents/openai.yaml 和唯一执行契约。认证/配置/更新及内部基础库禁止隐式 apply；可发现的业务 Skill 默认进入检查/preview。
 
 端内图复用海报的KIE配置与现有项目虚拟环境。lx-zuotu的伙伴包装入口和运行说明在本仓维护，统一调用tools/run_skill.py zuotu；安装只委派lx-init，必须绑定当前预览hash，不建立第二个虚拟环境。不得以伙伴初始化授权代替真实付费生图确认。
 
 更新只从 `https://github.com/pxiaolei/lxworkspace` 的正式发布分支检查，确认完整 commit 后执行快进；不自动 stash/reset/删除/合并。官方品牌预设需符合精确清单和文件 hash；真实账号配置、自定义品牌资料、业务文件、缓存与虚拟环境受保护。本地脏改动、分叉、路径冲突、远端删除或保护路径变更即停止。不要手改官方预设；新增官方品牌与本机同名资料冲突时联系我方处理。
+
+首版移除旧转发入口的一次迁移由我方协助，按`PILOT.md`核对删除清单和目标commit后单独确认普通快进；不能修改更新器来跳过拒删保护。
 
 ## 维护与验收
 

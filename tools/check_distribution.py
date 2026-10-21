@@ -51,10 +51,6 @@ def check(root=ROOT):
         if forbidden:
             errors.append("私人依赖进入分发: " + str(file.relative_to(root)))
     inventory = json.loads((root / "contracts/security/actions.json").read_text(encoding="utf-8"))
-    if root == ROOT:
-        from generate_workbuddy_entries import main
-        if main(["--check"]):
-            errors.append("WorkBuddy 薄入口漂移")
     for action in inventory["actions"]:
         if not (root / action["entrypoint"]).is_file():
             errors.append("动作入口缺失: " + action["entrypoint"])

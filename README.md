@@ -4,7 +4,7 @@ Windows + WorkBuddy 合作伙伴工作区。提供公司库查询、基础异动
 
 ## 接收工作区
 
-将下面整段发给 WorkBuddy。仓库首次公开发布后才可使用；本地发布准备已开展，Windows 安装与真实服务需在试点机验证。
+将下面整段发给 WorkBuddy，在 Windows 试点机完成安装和配置。
 
 ```text
 请帮我安装合作伙伴工作区 https://github.com/pxiaolei/lxworkspace。
@@ -17,7 +17,6 @@ Windows + WorkBuddy 合作伙伴工作区。提供公司库查询、基础异动
 10 个预设品牌的配置、Logo、二维码随仓库提供，不要求我额外添加；缺少品牌时报告缺口，不编造素材。
 账号密码、图片 Key、问答 token 由我方线下提供，只填写本机配置，不让我发到聊天里，不修改系统级 MCP 配置。
 完成后运行 Skill 索引检查和本地检查，区分“已安装”和“真实服务已验收”，告诉我可以怎样调用这七项业务能力。
-检查当前客户端是否加载 .codebuddy/skills 中的九个项目入口；未显示时报告版本和实际情况，不把读取了文件说成已注册。
 ```
 
 ## 本机准备
@@ -41,7 +40,7 @@ Windows + WorkBuddy 合作伙伴工作区。提供公司库查询、基础异动
 
 命令统一通过 `python tools/run_skill.py ...`（Windows 可用 `tools\lx.cmd ...`）；WorkBuddy 按各 Skill 契约组织参数。你不需要操作 Git 命令。
 
-当前[官方项目文档](https://www.codebuddy.cn/docs/workbuddy/From-Beginner-to-Expert-Guide/Function-Description/Project)列出 `.codebuddy/skills`。本仓在那里提供九个薄入口，指向 `.workbuddy/skills` 中的原始契约和脚本，品牌资料位置不变。数据库的加载别名为 `lx-shujuku`；Windows 客户端实际加载仍需验收。
+Skill 统一保存在 `.workbuddy/skills`，直接由 WorkBuddy 加载。
 
 卡券、调账分别通过 `python tools/run_skill.py kaquan ...`、`python tools/run_skill.py diaozhang ...` 执行。卡券依赖 openpyxl，由初始化入口经确认后装入现有项目虚拟环境；调账不增加第三方依赖。任务材料放 `workspace/06后台操作/卡券生成/` 或 `调账文件/` 下的新任务目录，细则见 `workspace/README.md`。
 
@@ -51,12 +50,13 @@ Windows + WorkBuddy 合作伙伴工作区。提供公司库查询、基础异动
 
 ```text
 python -B tools/generate_skill_index.py --check
-python -B tools/generate_workbuddy_entries.py --check
 python -B tools/check_distribution.py
 python -B tools/run_tests.py
 ```
 
 公共代码真源在 p-fog，文件和 hash 见 `config/source-lock.json`；伙伴入口和文档由本仓维护。代码不在伙伴本机手改，使用更新入口接收升级。更新禁止删除、强制覆盖或改真实配置；遇本地改动联系我方处理。
+
+已安装首版的伙伴，首次升级若提示“远端更新包含未授权删除”，请联系我方按 `PILOT.md` 协助迁移。新用户直接安装本版即可。
 
 当前试点只验证安装/能力发现、公司库查询、基础异动、MaxKB 问答和更新。用户已决定端外海报、端内图、卡券、调账免专项验收，日常生成时的确认与文件/二维码校验仍保留；免验不代表真实服务已验收。具体步骤见 [PILOT.md](PILOT.md)。
 
