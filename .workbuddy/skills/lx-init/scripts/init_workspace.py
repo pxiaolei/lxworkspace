@@ -41,7 +41,7 @@ def main(argv=None):
     if args.expected_preview_hash != preview_hash:
         parser.error("确认 hash 不一致，未安装")
     if sys.version_info < (3, 10) or not plan["git_available"] or not plan["node_available"]:
-        parser.error("需要 Python >=3.10、Node.js 和 Git；请联系我方补齐，不能自动全局安装")
+        parser.error("需要 Python >=3.10、Node.js 和 Git。请先运行 python tools/run_skill.py init-runtime 补齐这三样；本命令只安装项目虚拟环境")
     if VENV.is_symlink() or any(p.is_symlink() for p in VENV.parents):
         parser.error("虚拟环境路径不能包含符号链接")
     if not VENV.exists():
@@ -51,7 +51,7 @@ def main(argv=None):
         parser.error("现有虚拟环境不完整，请联系我方处理；不删除/覆盖")
     subprocess.run([str(python), "-m", "pip", "install", "-r", str(REQUIREMENTS), "-r", str(CARD_REQUIREMENTS), "-r", str(ZUOTU_REQUIREMENTS)], check=True)
     subprocess.run([str(python), "-B", "-c", "import requests, PIL, zxingcpp, yaml, openpyxl; print('runtime imports verified')"], check=True)
-    print("runtime installed and read back; configure accounts locally and install the company brand pack next")
+    print("runtime installed and read back")
     return 0
 
 
