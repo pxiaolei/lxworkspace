@@ -76,6 +76,26 @@
       "status": "offline-verified"
     },
     {
+      "id": "init.runtime",
+      "entrypoint": ".workbuddy/skills/lx-init/scripts/bootstrap_runtime.py",
+      "risk": "R2",
+      "preview": "--check-only reports present/planned and does not install",
+      "confirmation": "default installs only missing Python>=3.10, Node.js, and Git via winget or an existing brew",
+      "negative_test": "tools/tests/test_init_install_flow.py::RuntimeReportTest",
+      "readback": "reprobe present/newly_installed/failed without installer output",
+      "status": "offline-verified"
+    },
+    {
+      "id": "init.config",
+      "entrypoint": ".workbuddy/skills/lx-init/scripts/write_local_config.py",
+      "risk": "R2",
+      "preview": "field status without secret values",
+      "confirmation": "init form file via --from-json or --env-file; inline secrets refused",
+      "negative_test": "tools/tests/test_init_install_flow.py::LocalConfigWriteTest",
+      "readback": "written/kept/missing/blocked without printing secrets",
+      "status": "offline-verified"
+    },
+    {
       "id": "update.apply",
       "entrypoint": ".workbuddy/skills/lx-update/scripts/update_workspace.py",
       "risk": "R2",

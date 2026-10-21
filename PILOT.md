@@ -10,9 +10,9 @@
 
 ## Windows 安装
 
-在 WorkBuddy 打开一个选定的空工作目录，发送安装提示词，按提示选择下载得到的 lxworkspace。缺 Python >=3.10、Node 或 Git 时先报告，由我方协助安装；不让 Agent 自动修改系统环境。
+在 WorkBuddy 打开一个选定的空工作目录，发送安装提示词，按提示选择默认或自定义路径，再指到下载得到的 lxworkspace。缺少 Python >=3.10、Node.js 或 Git 时，初始化直接补齐这三样（Windows 用 winget；Mac 已有 Homebrew 则用 brew，否则按失败说明里的官方安装包），并在结果里写明本次新装了哪几样。除此之外不自动安装其它系统软件。
 
-初始化先预览、展示 hash，经用户确认后只安装项目虚拟环境。按线下指引在本机从 example 新建 `config/fog_config.yaml`、`config/lx-wenda.json`，已有文件不覆盖。无需另放 Logo/二维码。
+环境齐备后直接安装项目虚拟环境（仍绑定当前预览 hash，不另问用户）。公司库账号、图片 Key 和问答 token 由初始化表单写入本机配置；没有正式文件时从 example 生成，已有正式文件不覆盖已填内容。无需另放 Logo/二维码。
 
 完成后记录 Windows/WorkBuddy/Python/Node/Git 版本、工作区 commit、依赖检查结果及本工作区的业务 Skill 是否被识别并可调用。用户已确认 WorkBuddy 可以直接加载现有 Skill 目录；试点仍记录实际使用情况与缺项。
 

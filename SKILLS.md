@@ -8,7 +8,7 @@
 | --- | --- | --- | --- | --- |
 | `lx-diaozhang` | 调账 CSV 生成 | 可隐式路由 | [`SKILL.md`](.workbuddy/skills/lx-diaozhang/SKILL.md) | 生成司机补款或扣款调账 CSV，按自带模板校验必填字段、金额范围与精度，移除输出中的说明行并读回验证。用户要求调账模板、补款文件、扣款文件或 lx-diaozhang 时使用。 |
 | `lx-haibao` | 活动海报 | 可隐式路由 | [`SKILL.md`](.workbuddy/skills/lx-haibao/SKILL.md) | 使用伙伴提供的活动内容与我方品牌资料，预览后生成并验证海报。 |
-| `lx-init` | 初始化工作区 | 显式 | [`SKILL.md`](.workbuddy/skills/lx-init/SKILL.md) | 检查 Windows 工作区和运行环境，确认后只安装项目虚拟环境依赖。 |
+| `lx-init` | 初始化工作区 | 显式 | [`SKILL.md`](.workbuddy/skills/lx-init/SKILL.md) | 伙伴工作区初始化：确认目录，缺则直接补齐 Python/Node/Git，安装项目依赖，并用表单写入本机账号配置。仅在用户明确要求初始化、安装工作区或 lx-init 时使用。 |
 | `lx-kaquan` | 卡券文件生成 | 可隐式路由 | [`SKILL.md`](.workbuddy/skills/lx-kaquan/SKILL.md) | 按宏鹄原模板生成飞涨卡或免佣卡的批量创建 XLSX，使用已确认默认值，校验用户必填字段和条件约束，保留表头及重要说明并读回验收。用户要求卡券文件、飞涨卡模板、免佣卡模板或 lx-kaquan 时使用。 |
 | `lx-update` | 更新工作区 | 显式 | [`SKILL.md`](.workbuddy/skills/lx-update/SKILL.md) | 检查官方共享仓版本，确认完整 commit 后快进并保护伙伴本机资料。 |
 | `lx-wenda` | 产品知识库问答 | 可隐式路由 | [`SKILL.md`](.workbuddy/skills/lx-wenda/SKILL.md) | 调用我方完整 MaxKB 知识库，支持预览与绑定确认的多轮问答。 |

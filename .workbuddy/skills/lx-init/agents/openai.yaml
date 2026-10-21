@@ -1,7 +1,6 @@
 interface:
   display_name: "初始化工作区"
-  short_description: "检查 Windows 工作区和运行环境，确认后只安装项目虚拟环境依赖。"
+  short_description: "伙伴工作区初始化：确认目录，缺则直接补齐 Python/Node/Git，安装项目依赖，并用表单写入本机账号配置。仅在用户明确要求初始化、安装工作区或 lx-init 时使用。"
   default_prompt: "使用 $lx-init，先检查输入和范围，再按执行契约处理本次请求。"
 policy:
   allow_implicit_invocation: false
-

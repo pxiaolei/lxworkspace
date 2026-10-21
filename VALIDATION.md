@@ -83,3 +83,9 @@ MaxKB token说明依据：[官方对话API文档](https://github.com/1Panel-dev/
 - 首版的更新器仍会拒绝这十个文件的远端删除，未放开任何删除保护。旧包由我方按PILOT中的一次性受控迁移步骤处理，迁移不需要重新填写凭据；不把本地演练记为真实伙伴升级。
 - 隔离Git演练通过：原首版更新器拒绝十项删除时HEAD/refs/index不变；维护者确认后的普通快进移除旧入口，五份虚构本机配置/自定义素材/业务文件保持原字节，128公共hash、十项索引和分发检查通过，后续更新check为up-to-date。仅在隔离测试中将官方身份检查mock到本地publisher，无网络或真实伙伴迁移。
 - 本轮仅本地删减，尚未提交或公开推送此版，真实服务调用0，无依赖安装或真实配置变更。用户确认的目录加载能力与后续Windows端到端服务试点分别记录。
+
+## 2026-10-21 首次安装向导
+
+- 安装提示词改为默认工作目录选项：Windows `D:\Work\lxworkspace`，Mac `~/Documents/Work/lxworkspace`。缺少 Python >=3.10、Node.js 或 Git 时，lx-init 直接补齐这三样（Windows 用 winget；Mac 已有 Homebrew 则用 brew，否则失败说明给出官方安装包）。项目虚拟环境仍绑定当前预览 hash 后安装，不再向用户弹窗。公司库账号、图片 Key 和问答 token 只经表单写入本机配置；已有非空内容不覆盖，脚本不回显凭据。
+- 离线验证：`python -B tools/check_distribution.py` 通过。Skill 索引在名为 `lxworkspace` 的目录副本上 `--check` 通过；本环境目录名是 `workspace`，生成器按目录名写标题，所以在本目录直接 `--check` 只会报这一行标题漂移，索引正文仍是 lx-init 描述更新。项目虚拟环境内 `python -B tools/run_tests.py` 171 项通过（异动13、海报10、端内图48、卡券30、调账23、工具44、问答3）。验证时用当前预览 hash 实际安装过一次项目依赖，import 读回通过；配置测试只用临时目录和虚构值，仓库内没有正式账号文件。
+- 未在 Windows 或 Mac 上执行真实 winget/brew 安装。Linux 上缺少工具时只报告不能自动安装。未写入真实账号，未调用公司库、问答或生图。
