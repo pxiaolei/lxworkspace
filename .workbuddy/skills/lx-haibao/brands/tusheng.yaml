@@ -1,0 +1,37 @@
+brand_id: "tusheng"
+canonical_name: "土生途行"
+aliases: ["土生途行", "土生"]
+filename_keywords: ["土生途行", "土生"]
+
+assets:
+  logo_path: "${SKILL_ROOT}/brand-assets/tusheng/logo.png"
+  qr_path: "${SKILL_ROOT}/brand-assets/tusheng/qr.png"
+
+logo_overlay:
+  x_ratio: 0.05
+  y_ratio: 0.025
+  width_ratio: 0.14
+  height_ratio: 0.07
+  padding_ratio: 0.01
+
+template:
+  preferred_template_id: "template07"
+
+display:
+  poster_brand_name: "土生途行"
+  forbidden_brand_text: []
+
+output:
+  filename_template: "{brand}-{city}-{timestamp}.png"
+  overwrite_existing: true
+
+qr_validation:
+  validator_brand: "土生途行"
+  expected_value: "https://t.honghusaas.com/3m7Bw2p"
+  match_policy: "exact_decoded_value"
+
+style_notes:
+  - '品牌展示名写"土生途行"。'
+  - '整体以蓝色、白色和黑色为主，贴合土生途行 Logo 的蓝色圆形标和黑色品牌字。'
+  - '标题和信息卡片应突出城市司机活动、重点日期、奖励金额和参与门槛。'
+  - '画面适合使用城市道路、网约车、清晰蓝白信息区和运营活动角标。'

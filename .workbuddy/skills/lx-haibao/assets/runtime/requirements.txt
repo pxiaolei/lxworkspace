@@ -1,0 +1,4 @@
+requests
+Pillow
+zxing-cpp
+PyYAML

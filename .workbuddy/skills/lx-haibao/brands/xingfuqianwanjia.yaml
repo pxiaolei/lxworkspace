@@ -1,0 +1,38 @@
+brand_id: "xingfuqianwanjia"
+canonical_name: "幸福千万家"
+aliases: ["幸福千万家", "幸福千万家出行"]
+filename_keywords: ["幸福千万家", "幸福千万家出行"]
+
+assets:
+  logo_path: "${SKILL_ROOT}/brand-assets/xingfuqianwanjia/logo.jpg"
+  qr_path: "${SKILL_ROOT}/brand-assets/xingfuqianwanjia/qr.png"
+
+logo_overlay:
+  x_ratio: 0.05
+  y_ratio: 0.025
+  width_ratio: 0.13
+  height_ratio: 0.07
+  padding_ratio: 0.01
+
+template:
+  preferred_template_id: "template08"
+
+display:
+  poster_brand_name: "幸福千万家"
+  forbidden_brand_text: []
+  footer_color: "#0D73D9"
+
+output:
+  filename_template: "{brand}-{city}-{timestamp}.png"
+  overwrite_existing: true
+
+qr_validation:
+  validator_brand: "幸福千万家"
+  expected_value: "https://t.honghusaas.com/QgQnJlo"
+  match_policy: "exact_decoded_value"
+
+style_notes:
+  - '品牌展示名写"幸福千万家"，不要只展示图标。'
+  - '整体以清爽蓝、白色为主，辅以 logo 中的玫红、亮蓝、黄色和绿色点缀，符合夏季福利活动调性。'
+  - '标题突出福州市司机活动、免佣、卡券和当前 TXT 中明确提供的活动预告；信息卡片只展示本次 TXT 的真实模块，不从历史海报补充保底奖、权益等级、平台垫付或客服服务。'
+  - '画面适合使用城市道路、白色网约车、清凉夏季元素和紧凑权益卡片，避免常规线下活动海报风格。'

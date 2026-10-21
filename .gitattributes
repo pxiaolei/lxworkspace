@@ -1,0 +1,2 @@
+# Preserve exact shared-file SHA256 bytes on Windows and macOS.
+* -text

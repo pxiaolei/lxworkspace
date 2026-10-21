@@ -1,0 +1,5 @@
+{
+  "base": "http://maxkb.sfczhushou.com",
+  "token": "",
+  "timeout_ms": 120000
+}

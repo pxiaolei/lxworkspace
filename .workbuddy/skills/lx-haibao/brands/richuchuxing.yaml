@@ -1,0 +1,38 @@
+brand_id: "richuchuxing"
+canonical_name: "日初出行"
+aliases: ["日初", "日初出行"]
+filename_keywords: ["日初出行", "日初"]
+
+assets:
+  logo_path: "${SKILL_ROOT}/brand-assets/richuchuxing/logo.png"
+  qr_path: "${SKILL_ROOT}/brand-assets/richuchuxing/qr.png"
+
+logo_overlay:
+  x_ratio: 0.05
+  y_ratio: 0.025
+  width_ratio: 0.14
+  height_ratio: 0.07
+  padding_ratio: 0.01
+
+template:
+  preferred_template_id: "template10"
+
+display:
+  poster_brand_name: "日初出行"
+  footer_color: "#1F1A1A"
+  forbidden_brand_text: []
+
+output:
+  filename_template: "{brand}-{city}-{timestamp}.png"
+  overwrite_existing: true
+
+qr_validation:
+  validator_brand: "日初出行"
+  expected_value: "https://t.honghusaas.com/YMb8WgR"
+  match_policy: "exact_decoded_value"
+
+style_notes:
+  - '品牌展示名写"日初出行"。'
+  - '整体以红色、黑色、白色为主，贴合日出图形 Logo 的红色太阳和黑色山形线条。'
+  - '画面适合使用清晨城市道路、白色网约车、红黑重点信息栏和清晰的司机活动权益模块。'
+  - '标题和二维码区域要保持正式、清爽、司机活动海报感，避免使用过度卡通元素。'

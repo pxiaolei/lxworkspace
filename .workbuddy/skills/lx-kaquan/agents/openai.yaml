@@ -1,0 +1,6 @@
+interface:
+  display_name: "卡券文件生成"
+  short_description: "按宏鹄模板与确认的默认值生成飞涨卡或免佣卡 XLSX，并校验必填字段和读回结果"
+  default_prompt: "使用 $lx-kaquan，根据我提供的活动信息生成飞涨卡或免佣卡文件，使用已确认默认值，先预检，再交付通过读回验证的新 XLSX。"
+policy:
+  allow_implicit_invocation: true

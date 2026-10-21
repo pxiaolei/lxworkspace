@@ -1,0 +1,24 @@
+{
+  "mianyong": {
+    "tag": "普通卡",
+    "get_type": "购买",
+    "stock": 999,
+    "card_rule": "每天前x单免佣",
+    "order_limit": 99,
+    "order_category": "普通单,特赚单,稳收单",
+    "join_dri_tag": "",
+    "forbid_dri_tag": "",
+    "attention": null
+  },
+  "feizhang": {
+    "tag": "普通卡",
+    "get_type": "购买",
+    "stock": 999,
+    "card_rule": "每天前x单飞涨",
+    "order_limit": 99,
+    "order_category": "普通单,特赚单,稳收单",
+    "join_dri_tag": "",
+    "forbid_dri_tag": "",
+    "attention": null
+  }
+}

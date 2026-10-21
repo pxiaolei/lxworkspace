@@ -1,0 +1,136 @@
+{
+  "type": "lx_shujuku.metrics_catalog",
+  "version": 1,
+  "updated_at": "2026-06-03",
+  "database": "dataReporting",
+  "metrics": {
+    "brand_city_daily_completed_orders": {
+      "display_name": "品牌按城市日完单量",
+      "description": "查询某品牌在某自然日、按城市汇总的完单量。",
+      "default_table": "honghu_order_data",
+      "date_field": "date_day",
+      "required_filters": [
+        "brand_name",
+        "date_day"
+      ],
+      "dimensions": [
+        {
+          "field": "city_name",
+          "label": "城市"
+        }
+      ],
+      "measure": {
+        "field": "completed_order_count",
+        "label": "完单量",
+        "aggregation": "SUM"
+      },
+      "default_order_by": "completed_order_count DESC",
+      "grain_note": "honghu_order_data 可能按城市、流量渠道、订单类型等多行存储；同一城市必须 SUM(completed_order_count)，不能 COUNT(*)。",
+      "use_when": "用户询问品牌在某天、按城市、品牌或总计维度的离线订单完单量。",
+      "do_not_use_when": [
+        "用户明确要求实时累计数据",
+        "用户只给出租户名称且未确认品牌映射",
+        "用户要求乘客、司机、订单明细级隐私数据"
+      ],
+      "query_template": "SELECT city_name, SUM(completed_order_count) AS completed_order_count FROM honghu_order_data WHERE brand_name = '{brand_name}' AND date_day = '{date_day}' GROUP BY city_name ORDER BY completed_order_count DESC LIMIT {limit}",
+      "verification_queries": [
+        {
+          "name": "total_completed_order_count",
+          "sql": "SELECT SUM(completed_order_count) AS total_completed_order_count, COUNT(*) AS source_row_count, COUNT(DISTINCT city_name) AS city_count FROM honghu_order_data WHERE brand_name = '{brand_name}' AND date_day = '{date_day}' LIMIT 1"
+        },
+        {
+          "name": "city_sum_completed_order_count",
+          "sql": "SELECT SUM(city_completed_order_count) AS city_sum_completed_order_count FROM (SELECT city_name, SUM(completed_order_count) AS city_completed_order_count FROM honghu_order_data WHERE brand_name = '{brand_name}' AND date_day = '{date_day}' GROUP BY city_name) t LIMIT 1"
+        }
+      ],
+      "evidence_required": [
+        "query_target",
+        "date_day",
+        "brand_name",
+        "safe_sql",
+        "row_count",
+        "verification_queries"
+      ]
+    },
+    "brand_daily_completed_orders": {
+      "display_name": "品牌日完单总量",
+      "description": "查询某品牌在某自然日的离线完单总量。",
+      "default_table": "honghu_order_data",
+      "date_field": "date_day",
+      "required_filters": [
+        "brand_name",
+        "date_day"
+      ],
+      "dimensions": [],
+      "measure": {
+        "field": "completed_order_count",
+        "label": "完单量",
+        "aggregation": "SUM"
+      },
+      "query_template": "SELECT SUM(completed_order_count) AS total_completed_order_count FROM honghu_order_data WHERE brand_name = '{brand_name}' AND date_day = '{date_day}' LIMIT 1",
+      "verification_queries": [
+        {
+          "name": "source_row_count",
+          "sql": "SELECT COUNT(*) AS source_row_count, COUNT(DISTINCT city_name) AS city_count FROM honghu_order_data WHERE brand_name = '{brand_name}' AND date_day = '{date_day}' LIMIT 1"
+        }
+      ]
+    },
+    "tenant_daily_realtime_completed_orders": {
+      "display_name": "租户实时累计日完单数",
+      "description": "查询某租户在某日期的实时累计订单完单数。",
+      "default_table": "order_real_time_data",
+      "date_field": "datae_column_b4276e28f8_day_real",
+      "required_filters": [
+        "tenant_name",
+        "datae_column_b4276e28f8_day_real"
+      ],
+      "dimensions": [
+        {
+          "field": "tenant_name",
+          "label": "租户"
+        }
+      ],
+      "measure": {
+        "field": "cal_6bb0fc3c10",
+        "label": "完单数",
+        "aggregation": "SUM"
+      },
+      "use_when": "用户明确要求实时累计，或查询对象是租户名称。",
+      "do_not_use_when": [
+        "用户要求某品牌各城市完单量且未确认品牌和租户映射",
+        "用户要求离线订单口径"
+      ],
+      "query_template": "SELECT tenant_name, SUM(cal_6bb0fc3c10) AS completed_order_count FROM order_real_time_data WHERE tenant_name = '{tenant_name}' AND datae_column_b4276e28f8_day_real = '{date_day}' GROUP BY tenant_name LIMIT {limit}",
+      "verification_queries": [
+        {
+          "name": "source_row_count",
+          "sql": "SELECT COUNT(*) AS source_row_count FROM order_real_time_data WHERE tenant_name = '{tenant_name}' AND datae_column_b4276e28f8_day_real = '{date_day}' LIMIT 1"
+        }
+      ]
+    },
+    "operator_brand_mapping": {
+      "display_name": "运营主体品牌城市码表",
+      "description": "查询运营主体、品牌、城市、对接人映射关系。",
+      "default_table": "operator_brand",
+      "date_field": null,
+      "required_filters": [],
+      "dimensions": [
+        {
+          "field": "operator_entity",
+          "label": "运营主体"
+        },
+        {
+          "field": "brand_name",
+          "label": "品牌"
+        },
+        {
+          "field": "city_name",
+          "label": "城市"
+        }
+      ],
+      "measure": null,
+      "query_template": "SELECT operator_entity, brand_name, city_name, contact_person FROM operator_brand WHERE {conditions} ORDER BY operator_entity, brand_name, city_name LIMIT {limit}",
+      "verification_queries": []
+    }
+  }
+}

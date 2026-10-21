@@ -1,0 +1,23 @@
+# 历史样图验收案例，不是正式运营活动；不补年份。
+brand: 宏鹄
+activity_name: 五一早鸟卡
+reference_set: mayday
+types: all
+subtitle: 五一全免佣，跑单“零”压力
+title: 五一节6天免佣早鸟卡
+selling_points:
+  - 越早领越便宜
+  - 即将恢复
+amounts:
+  - 早鸟价 ¥50
+  - 正式价 ¥100
+dates: 购卡锁定4月30日-5月5日全6天免佣
+rules: 早鸟卡售卡时间：4月16日-4月26日
+button: 查看详情
+type_text:
+  home_banner:
+    title: 五一6天全免佣 购卡仅需50元
+  sidebar_banner:
+    title: 五一6天全免佣 购卡仅需50元
+  benefit_banner:
+    title: 五一6天全免佣 购卡仅需50元

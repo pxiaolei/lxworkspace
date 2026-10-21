@@ -1,0 +1,20 @@
+{
+  "name": "lx-wenda",
+  "version": "1.0.0",
+  "private": true,
+  "description": "宏鹄 SaaS 产品知识库问答（MCP Server + CLI，零依赖）",
+  "main": "server.js",
+  "bin": {
+    "lx-wenda-ask": "ask.js",
+    "lx-wenda-mcp": "server.js"
+  },
+  "scripts": {
+    "ask": "node ask.js",
+    "mcp": "node server.js",
+    "selftest": "node selftest.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {}
+}

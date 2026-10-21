@@ -1,0 +1,37 @@
+# 只在本机填写我方线下提供的账号/Key，不发到聊天或 Git。
+version: 1
+project:
+  root: ""
+  workspace_root: "workspace"
+lx_shujuku:
+  api:
+    base_url: "http://datareporting.sfczhushou.com"
+    username: ""
+    password: ""
+  query:
+    default_limit: 100
+    max_limit: 1000
+lx_yidongfenxi:
+  thresholds:
+    rate: 0.05
+    absolute: 500
+    minimum_completed: 0
+  # 独立于私人工作区；单日实际数、多日日均值。小规模变化也可由变化率命中。
+lx_haibao:
+  output_dir: "workspace/09端外海报图/产出图"
+  meta_dir: "workspace/09端外海报图/元数据"
+  tmp_dir: "workspace/09端外海报图/临时图"
+  log_dir: "workspace/09端外海报图/处理日志"
+  image_api:
+    providers: ["kie"]
+    provider_primary: "kie"
+    provider_fallback: ""
+    kie:
+      api_key: ""
+      base_url: "https://api.kie.ai"
+      upload_base_url: "https://kieai.redpandaai.co"
+      text_model: "gpt-image-2-text-to-image"
+      image_model: "gpt-image-2-image-to-image"
+      aspect_ratio: "auto"
+      upload_path: "images/lx-haibao"
+      callback_url: ""

@@ -1,0 +1,273 @@
+{
+  "route_is_authorization": false,
+  "actions": [
+    {
+      "id": "kaquan.preview",
+      "entrypoint": ".workbuddy/skills/lx-kaquan/scripts/generate_cards.py",
+      "risk": "R0",
+      "preview": "--dry-run; no directory/output/log/install/network writes",
+      "status": "offline-verified"
+    },
+    {
+      "id": "kaquan.generate",
+      "entrypoint": ".workbuddy/skills/lx-kaquan/scripts/generate_cards.py",
+      "risk": "R1",
+      "preview": "--dry-run; validate complete batch",
+      "confirmation": "user requests local file; refuses existing/symlink output; no backend upload",
+      "negative_test": ".workbuddy/skills/lx-kaquan/tests/test_generate_cards.py",
+      "readback": "independent saved workbook readback of rows, values, types and template preservation",
+      "status": "offline-verified"
+    },
+    {
+      "id": "diaozhang.preview",
+      "entrypoint": ".workbuddy/skills/lx-diaozhang/scripts/generate_adjustment.py",
+      "risk": "R0",
+      "preview": "--dry-run; no directory/output/log/install/network writes",
+      "status": "offline-verified"
+    },
+    {
+      "id": "diaozhang.generate",
+      "entrypoint": ".workbuddy/skills/lx-diaozhang/scripts/generate_adjustment.py",
+      "risk": "R1",
+      "preview": "--dry-run; validate complete batch",
+      "confirmation": "user requests local file; refuses existing/symlink output; no real account adjustment",
+      "negative_test": ".workbuddy/skills/lx-diaozhang/tests/test_generate_adjustment.py",
+      "readback": "independent saved CSV readback of BOM, CRLF, fields, rows and amount text",
+      "status": "offline-verified"
+    },
+    {
+      "id": "database.query",
+      "entrypoint": ".workbuddy/skills/lx_shujuku/scripts/partner_query.py",
+      "risk": "R1",
+      "preview": "default no client/no file",
+      "confirmation": "--confirmed + preview_hash",
+      "negative_test": "tools/tests/test_partner_gates.py::test_query_preview_and_stale_confirmation_do_not_create_client_or_files",
+      "readback": "JSON independent readback",
+      "status": "offline-verified"
+    },
+    {
+      "id": "anomaly.company",
+      "entrypoint": ".workbuddy/skills/lx-yidongfenxi/scripts/run_partner_analysis.py",
+      "risk": "R1",
+      "preview": "default no client/no files",
+      "confirmation": "--confirmed + preview_hash",
+      "negative_test": "tools/tests/test_partner_gates.py::test_missing_periods_and_preview_never_reach_company_client",
+      "readback": "JSON independent readback",
+      "status": "offline-verified"
+    },
+    {
+      "id": "poster.generate",
+      "entrypoint": ".workbuddy/skills/lx-haibao/scripts/run_poster_batch.py",
+      "risk": "R2",
+      "preview": "--dry-run",
+      "confirmation": "--confirmed bound to preview TXT/brand/city/template/paths",
+      "negative_test": ".workbuddy/skills/lx-haibao/tests/test_safety_gates.py",
+      "readback": "final image + QR decoded equality",
+      "status": "live-pending"
+    },
+    {
+      "id": "init.install",
+      "entrypoint": ".workbuddy/skills/lx-init/scripts/init_workspace.py",
+      "risk": "R2",
+      "preview": "default check",
+      "confirmation": "--install --confirmed + preview_hash",
+      "negative_test": "tools/tests/test_partner_gates.py::test_init_unconfirmed_or_stale_runs_no_installer",
+      "readback": "venv imports",
+      "status": "offline-verified"
+    },
+    {
+      "id": "update.apply",
+      "entrypoint": ".workbuddy/skills/lx-update/scripts/update_workspace.py",
+      "risk": "R2",
+      "preview": "check in isolated temporary inspection repo; target unchanged",
+      "confirmation": "apply --confirmed full-commit",
+      "negative_test": "tools/tests/test_partner_gates.py::test_stale_update_confirmation_does_not_fetch_or_merge_target",
+      "readback": "HEAD/origin and clean worktree + index/distribution",
+      "status": "offline-verified"
+    },
+    {
+      "id": "wenda.cli",
+      "entrypoint": ".workbuddy/skills/lx-wenda/ask.js",
+      "risk": "R3",
+      "preview": "default question/chat preview with zero HTTP",
+      "confirmation": "confirmed + expected_preview_hash",
+      "negative_test": ".workbuddy/skills/lx-wenda/test_safety.js",
+      "readback": "independent GET historical_conversation record id/chat/question/answer",
+      "status": "blocked-live-readback"
+    },
+    {
+      "id": "wenda.mcp",
+      "entrypoint": ".workbuddy/skills/lx-wenda/server.js",
+      "risk": "R3",
+      "preview": "default question/chat preview with zero HTTP",
+      "confirmation": "confirmed + expected_preview_hash",
+      "negative_test": ".workbuddy/skills/lx-wenda/test_safety.js",
+      "readback": "independent GET historical_conversation record id/chat/question/answer",
+      "status": "blocked-live-readback"
+    },
+    {
+      "id": "wenda.selftest",
+      "entrypoint": ".workbuddy/skills/lx-wenda/selftest.js",
+      "risk": "R3",
+      "preview": "default question/chat preview with zero HTTP",
+      "confirmation": "confirmed + expected_preview_hash",
+      "negative_test": ".workbuddy/skills/lx-wenda/test_safety.js",
+      "readback": "independent GET historical_conversation record id/chat/question/answer",
+      "status": "blocked-live-readback"
+    },
+    {
+      "id": "config.save.internal",
+      "entrypoint": ".workbuddy/skills/lxx_share/fog_config.py",
+      "risk": "R2",
+      "preview": "caller previews config fields without credentials",
+      "confirmation": "explicit separate configuration authorization; no init caller",
+      "negative_test": "not invoked by init; separate authorized caller required",
+      "readback": "local file readback",
+      "status": "blocked-no-public-caller"
+    },
+    {
+      "id": "poster.runtime.legacy-install",
+      "entrypoint": ".workbuddy/skills/lx-haibao/scripts/check_runtime.py",
+      "risk": "R4",
+      "preview": "default runtime check, no install",
+      "confirmation": "--install --confirmed binds local venv; partner user entry uses lx-init hash instead",
+      "negative_test": ".workbuddy/skills/lx-haibao/tests/test_safety_gates.py::test_install_without_confirmation_runs_no_subprocess_or_install_step",
+      "readback": "runtime import and local check; never assume brand assets ready",
+      "status": "blocked-use-lx-init",
+      "recovery": "stop and inspect local venv; removal/rebuild requires separate explicit authorization"
+    },
+    {
+      "id": "poster.wrapper.haibao.cmd",
+      "entrypoint": ".workbuddy/skills/lx-haibao/haibao.cmd",
+      "risk": "R2",
+      "preview": "wrapper forwards existing poster/runtime safety gates",
+      "status": "delegated",
+      "delegate": "poster.generate",
+      "confirmation": "--confirmed bound to preview TXT/brand/city/template/paths",
+      "negative_test": ".workbuddy/skills/lx-haibao/tests/test_safety_gates.py",
+      "readback": "final image + QR decoded equality"
+    },
+    {
+      "id": "poster.wrapper.haibao.sh",
+      "entrypoint": ".workbuddy/skills/lx-haibao/haibao.sh",
+      "risk": "R2",
+      "preview": "wrapper forwards existing poster/runtime safety gates",
+      "status": "delegated",
+      "delegate": "poster.generate",
+      "confirmation": "--confirmed bound to preview TXT/brand/city/template/paths",
+      "negative_test": ".workbuddy/skills/lx-haibao/tests/test_safety_gates.py",
+      "readback": "final image + QR decoded equality"
+    },
+    {
+      "id": "poster.wrapper.check_runtime.cmd",
+      "entrypoint": ".workbuddy/skills/lx-haibao/check_runtime.cmd",
+      "risk": "R4",
+      "preview": "wrapper forwards existing poster/runtime safety gates",
+      "status": "delegated",
+      "delegate": "poster.runtime.legacy-install",
+      "confirmation": "--install --confirmed binds local venv; partner user entry uses lx-init hash instead",
+      "negative_test": ".workbuddy/skills/lx-haibao/tests/test_safety_gates.py::test_install_without_confirmation_runs_no_subprocess_or_install_step",
+      "readback": "runtime import and local check; never assume brand assets ready"
+    },
+    {
+      "id": "poster.wrapper.check_runtime.sh",
+      "entrypoint": ".workbuddy/skills/lx-haibao/check_runtime.sh",
+      "risk": "R4",
+      "preview": "wrapper forwards existing poster/runtime safety gates",
+      "status": "delegated",
+      "delegate": "poster.runtime.legacy-install",
+      "confirmation": "--install --confirmed binds local venv; partner user entry uses lx-init hash instead",
+      "negative_test": ".workbuddy/skills/lx-haibao/tests/test_safety_gates.py::test_install_without_confirmation_runs_no_subprocess_or_install_step",
+      "readback": "runtime import and local check; never assume brand assets ready"
+    },
+    {
+      "id": "zuotu.check",
+      "entrypoint": ".workbuddy/skills/lx-zuotu/scripts/run_zuotu_batch.py",
+      "risk": "R0",
+      "preview": "--check; zero requests/persistence; checks local references and config presence",
+      "status": "offline-verified"
+    },
+    {
+      "id": "zuotu.preview",
+      "entrypoint": ".workbuddy/skills/lx-zuotu/scripts/run_zuotu_batch.py",
+      "risk": "R0",
+      "preview": "--dry-run; zero network/output/log/bytecode writes",
+      "status": "offline-verified"
+    },
+    {
+      "id": "zuotu.generate",
+      "entrypoint": ".workbuddy/skills/lx-zuotu/scripts/run_zuotu_batch.py",
+      "risk": "R2",
+      "preview": "--dry-run prints exact text/types/sizes/plan_hash",
+      "confirmation": "--confirmed for selected sample scope; separate user approval for full batch; plan/spec unchanged",
+      "negative_test": ".workbuddy/skills/lx-zuotu/tests/test_safety_gates.py",
+      "readback": "physical checks + final SHA256-bound real visual review before promotion; unknown task stops resubmission",
+      "status": "live-pending"
+    },
+    {
+      "id": "zuotu.review",
+      "entrypoint": ".workbuddy/skills/lx-zuotu/scripts/run_zuotu_batch.py",
+      "risk": "R2",
+      "preview": "inspect final candidate and exact scope before local review writeback",
+      "confirmation": "--review-file --confirmed + matching plan_hash/image_sha256; no provider call",
+      "negative_test": ".workbuddy/skills/lx-zuotu/tests/test_validation.py",
+      "readback": "independent final bytes/hash/specs and explicit observed_text/checks; missing review stays pending",
+      "status": "offline-verified"
+    },
+    {
+      "id": "zuotu.runtime.compat",
+      "entrypoint": ".workbuddy/skills/lx-zuotu/scripts/check_runtime.py",
+      "risk": "R2",
+      "preview": "default lx-init check; no second venv",
+      "confirmation": "delegates same --install --confirmed --expected-preview-hash gate",
+      "negative_test": "tools/tests/test_zuotu_partner.py::ZuotuPartnerTests::test_runtime_compatibility_entry_cannot_install_without_preview_hash",
+      "readback": "same lx-init project imports",
+      "status": "delegated",
+      "delegate": "init.install"
+    },
+    {
+      "id": "zuotu.wrapper.zuotu.sh",
+      "entrypoint": ".workbuddy/skills/lx-zuotu/zuotu.sh",
+      "risk": "R2",
+      "preview": "forwards unified project preview; no independent installer",
+      "confirmation": "delegates zuotu.generate confirmation and scope gates",
+      "negative_test": "tools/tests/test_zuotu_partner.py",
+      "readback": "delegate final artifact/import readback",
+      "status": "delegated",
+      "delegate": "zuotu.generate"
+    },
+    {
+      "id": "zuotu.wrapper.zuotu.cmd",
+      "entrypoint": ".workbuddy/skills/lx-zuotu/zuotu.cmd",
+      "risk": "R2",
+      "preview": "forwards unified project preview; no independent installer",
+      "confirmation": "delegates zuotu.generate confirmation and scope gates",
+      "negative_test": "tools/tests/test_zuotu_partner.py",
+      "readback": "delegate final artifact/import readback",
+      "status": "delegated",
+      "delegate": "zuotu.generate"
+    },
+    {
+      "id": "zuotu.wrapper.check_runtime.sh",
+      "entrypoint": ".workbuddy/skills/lx-zuotu/check_runtime.sh",
+      "risk": "R2",
+      "preview": "forwards unified project preview; no independent installer",
+      "confirmation": "delegates init.install confirmation and scope gates",
+      "negative_test": "tools/tests/test_zuotu_partner.py",
+      "readback": "delegate final artifact/import readback",
+      "status": "delegated",
+      "delegate": "init.install"
+    },
+    {
+      "id": "zuotu.wrapper.check_runtime.cmd",
+      "entrypoint": ".workbuddy/skills/lx-zuotu/check_runtime.cmd",
+      "risk": "R2",
+      "preview": "forwards unified project preview; no independent installer",
+      "confirmation": "delegates init.install confirmation and scope gates",
+      "negative_test": "tools/tests/test_zuotu_partner.py",
+      "readback": "delegate final artifact/import readback",
+      "status": "delegated",
+      "delegate": "init.install"
+    }
+  ]
+}

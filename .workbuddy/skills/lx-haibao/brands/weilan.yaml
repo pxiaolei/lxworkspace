@@ -1,0 +1,38 @@
+brand_id: "weilan"
+canonical_name: "蔚蓝滴仕"
+aliases: ["蔚蓝", "蔚蓝滴仕"]
+filename_keywords: ["蔚蓝滴仕", "蔚蓝"]
+
+assets:
+  logo_path: "${SKILL_ROOT}/brand-assets/weilan/logo.png"
+  qr_path: "${SKILL_ROOT}/brand-assets/weilan/qr.png"
+
+template:
+  preferred_template_id: "template01"
+
+logo_overlay:
+  x_ratio: 0.05
+  y_ratio: 0.025
+  width_ratio: 0.14
+  height_ratio: 0.07
+  padding_ratio: 0.01
+
+display:
+  poster_brand_name: "蔚蓝滴仕"
+  forbidden_brand_text: []
+
+output:
+  filename_template: "{brand}-{city}-{timestamp}.png"
+  overwrite_existing: true
+
+qr_validation:
+  validator_brand: "蔚蓝滴仕"
+  expected_value: "https://t.honghusaas.com/RqqWgkx"
+  match_policy: "exact_decoded_value"
+
+style_notes:
+  - '品牌展示名写"蔚蓝滴仕"。'
+  - '整体采用蓝白橙配色，画面明亮、清爽、司机招募场景明确。'
+  - '顶部保留品牌区、主标题、副标题和活动日期条的空间层级。'
+  - '画面可包含城市道路、车辆背景、蓝色信息卡片、底部卖点栏。'
+  - '重点数字、价格和核心时间信息使用橙色、加粗、大字号突出。'

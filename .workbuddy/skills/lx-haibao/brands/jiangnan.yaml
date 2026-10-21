@@ -1,0 +1,37 @@
+brand_id: "jiangnan"
+canonical_name: "江南出行"
+aliases: ["江南", "江南出行"]
+filename_keywords: ["江南出行", "江南"]
+
+assets:
+  logo_path: "${SKILL_ROOT}/brand-assets/jiangnan/logo.png"
+  qr_path: "${SKILL_ROOT}/brand-assets/jiangnan/qr.png"
+
+logo_overlay:
+  x_ratio: 0.05
+  y_ratio: 0.025
+  width_ratio: 0.14
+  height_ratio: 0.07
+  padding_ratio: 0.01
+
+template:
+  preferred_template_id: "template03"
+
+display:
+  poster_brand_name: "江南出行"
+  forbidden_brand_text: []
+
+output:
+  filename_template: "{brand}-{city}-{timestamp}.png"
+  overwrite_existing: true
+
+qr_validation:
+  validator_brand: "江南出行"
+  expected_value: "https://t.honghusaas.com/pr3GqDr"
+  match_policy: "exact_decoded_value"
+
+style_notes:
+  - '品牌展示名写"江南出行"。'
+  - '整体以绿色、白色为主，风格清爽明亮、司机招募/活动运营感。'
+  - '顶部使用江南出行 Logo，主标题建议"跑网约车 选江南出行"，城市标识使用"XX市司机专享活动"。'
+  - '画面可包含城市道路、白色网约车、绿色信息卡片。'

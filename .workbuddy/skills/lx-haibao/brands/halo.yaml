@@ -1,0 +1,45 @@
+brand_id: "halo"
+canonical_name: "哈啰"
+aliases: ["哈啰", "哈啰轻快"]
+filename_keywords: ["哈啰轻快", "哈啰"]
+
+assets:
+  logo_path: "${SKILL_ROOT}/brand-assets/halo/logo.png"
+  qr_path: "${SKILL_ROOT}/brand-assets/halo/qr.png"
+
+template:
+  preferred_template_id: "template02"
+
+logo_overlay:
+  mode: "draw_logo_lockup"
+  text: "哈啰"
+  wordmark_text: "哈啰"
+  font_path: "/System/Library/Fonts/STHeiti Medium.ttc"
+  icon_fill: "#078DFF"
+  icon_text_color: "#FFFFFF"
+  wordmark_color: "#111111"
+  x_ratio: 0.035
+  y_ratio: 0.022
+  width_ratio: 0.24
+  height_ratio: 0.055
+  padding_ratio: 0.0
+
+display:
+  poster_brand_name: "哈啰"
+  forbidden_brand_text: ["哈啰轻快"]
+  footer_color: "#078DFF"
+
+output:
+  filename_template: "{brand}-{city}-{timestamp}.png"
+  overwrite_existing: true
+
+qr_validation:
+  validator_brand: "哈啰"
+  expected_value: "https://t.honghusaas.com/zEw6B9a"
+  match_policy: "exact_decoded_value"
+
+style_notes:
+  - '品牌展示名只写"哈啰"，不得写"哈啰轻快"。'
+  - '整体以蓝色、蓝白绿为主，风格清爽、直接、运营感强。'
+  - '标题和角标应突出"哈啰"和城市司机活动。'
+  - '画面适合使用城市道路、白色网约车、蓝绿信息卡片和轻量运营角标。'

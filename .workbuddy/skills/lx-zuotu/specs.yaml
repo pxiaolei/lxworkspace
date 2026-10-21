@@ -1,0 +1,65 @@
+version: 1
+types:
+  home_banner:
+    name: 首页banner
+    family: horizontal
+    layout: banner
+    sample_priority: 10
+    format: JPEG
+    extension: jpg
+    max_kb: 300
+    display_fields: [subtitle, title, button]
+    generation_ratio: '3:1'
+    resolution: 1K
+    sizes: [[690, 160]]
+  splash:
+    name: 开屏页
+    family: vertical
+    layout: splash
+    sample_priority: 10
+    format: JPEG
+    extension: jpg
+    max_kb: 1000
+    display_fields: [subtitle, title, selling_points, amounts, dates, rules]
+    resolution: 2K
+    sizes:
+      - {width: 640, height: 960, generation_ratio: '2:3'}
+      - {width: 1242, height: 2208, generation_ratio: '9:16', sample: true}
+      - {width: 1242, height: 2688, generation_ratio: '1:2'}
+  popup:
+    name: 弹窗
+    family: vertical
+    layout: popup
+    sample_priority: 20
+    format: PNG
+    extension: png
+    max_kb: 300
+    display_fields: [subtitle, title, selling_points, amounts, button, dates, rules]
+    generation_ratio: '3:4'
+    resolution: 1K
+    transparent: true
+    sizes: [[534, 712], [884, 1178]]
+  sidebar_banner:
+    name: 侧边栏banner
+    family: horizontal
+    layout: banner
+    sample_priority: 30
+    format: JPEG
+    extension: jpg
+    max_kb: 300
+    display_fields: [subtitle, title, button]
+    generation_ratio: '3:1'
+    resolution: 1K
+    sizes: [[420, 120]]
+  benefit_banner:
+    name: 权益中心banner
+    family: horizontal
+    layout: banner
+    sample_priority: 20
+    format: JPEG
+    extension: jpg
+    max_kb: 300
+    display_fields: [subtitle, title, button]
+    generation_ratio: '3:1'
+    resolution: 1K
+    sizes: [[690, 200]]

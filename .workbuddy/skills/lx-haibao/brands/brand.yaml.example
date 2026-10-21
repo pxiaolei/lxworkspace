@@ -1,0 +1,20 @@
+# 我方根据伙伴品牌制作完整配置包，伙伴不自行猜二维码地址/模板绑定。
+brand_id: "example"
+canonical_name: "示例品牌"
+aliases: ["示例品牌"]
+filename_keywords: ["示例品牌"]
+assets:
+  logo_path: "${SKILL_ROOT}/brand-assets/example/logo.png"
+  qr_path: "${SKILL_ROOT}/brand-assets/example/qr.png"
+template:
+  preferred_template_id: "template08"
+display:
+  poster_brand_name: "示例品牌"
+  forbidden_brand_text: []
+output:
+  filename_template: "{brand}-{city}-{timestamp}.png"
+  overwrite_existing: false
+qr_validation:
+  validator_brand: "示例品牌"
+  expected_value: ""
+  match_policy: "exact_decoded_value"
