@@ -12,7 +12,7 @@
 
 在 WorkBuddy 打开一个选定的空工作目录，发送安装提示词，按提示选择默认或自定义路径，再指到下载得到的 lxworkspace。缺少 Python >=3.10、Node.js 或 Git 时，初始化直接补齐这三样（Windows 用 winget；Mac 已有 Homebrew 则用 brew，否则按失败说明里的官方安装包），并在结果里写明本次新装了哪几样。除此之外不自动安装其它系统软件。
 
-环境齐备后直接安装项目虚拟环境（仍绑定当前预览 hash，不另问用户）。公司库账号、图片 Key 和问答 token 由初始化表单写入本机配置；没有正式文件时从 example 生成，已有正式文件不覆盖已填内容。无需另放 Logo/二维码。
+环境齐备后直接安装项目虚拟环境（仍绑定当前预览 hash，不另问用户）。运行 `python tools/run_skill.py init-config --gui`，确认本机出现四字段输入窗口、敏感字段遮挡；先取消一次确认零写入，再重新打开填写并保存，确认返回 `saved` 与 `readback=verified`。已有非空项应保留且不显示原值。窗口打不开时记录错误阶段并停止，不改用临时 JSON 或记事本。无需另放 Logo/二维码。
 
 完成后记录 Windows/WorkBuddy/Python/Node/Git 版本、工作区 commit、依赖检查结果及本工作区的业务 Skill 是否被识别并可调用。用户已确认 WorkBuddy 可以直接加载现有 Skill 目录；试点仍记录实际使用情况与缺项。
 

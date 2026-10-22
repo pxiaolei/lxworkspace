@@ -1,6 +1,6 @@
 interface:
-  display_name: "FOG旧初始化入口"
-  short_description: "检查FOG旧初始化配置并路由到当前tools/fog.py入口"
-  default_prompt: "使用 $lx-init 检查旧初始化配置，并给出当前tools/fog.py兼容命令与缺项。"
+  display_name: "初始化工作区"
+  short_description: "准备当前工作区的运行环境与项目依赖，打开本机窗口填写账号配置"
+  default_prompt: "使用 $lx-init 初始化当前工作区，准备依赖后运行 init-config --gui 打开本机配置窗口。"
 policy:
   allow_implicit_invocation: false

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Write local fog and wenda config from a form file without printing secrets."""
+"""Write local config from a native window or legacy file, without secret output."""
 import json
 import os
 from pathlib import Path
@@ -85,11 +85,18 @@ def parse_args(argv):
     source = None
     kind = None
     root = None
+    gui = False
     index = 0
     while index < len(argv):
         arg = argv[index]
+        if arg == "--gui":
+            if gui:
+                return None, "参数重复"
+            gui = True
+            index += 1
+            continue
         if arg not in {"--from-json", "--env-file", "--root"}:
-            return None, "只接受 --from-json、--env-file 和 --root"
+            return None, "只接受 --gui、--from-json、--env-file 和 --root"
         if index + 1 >= len(argv):
             return None, "缺少参数值"
         value = argv[index + 1]
@@ -105,9 +112,11 @@ def parse_args(argv):
             return None, "请只提供一种表单文件"
         source = value
         kind = "json" if arg == "--from-json" else "env"
-    if source is None:
-        return None, "请提供 --from-json 或 --env-file"
-    return {"source": source, "kind": kind, "root": root}, None
+    if gui and source is not None:
+        return None, "本机窗口和文件导入不能同时使用"
+    if source is None and not gui:
+        return None, "请使用 --gui，或提供 --from-json / --env-file"
+    return {"source": source, "kind": kind, "root": root, "gui": gui}, None
 
 
 def _unsafe(root, path):
@@ -307,7 +316,7 @@ def apply_fog(root, values):
         if not example.is_file() or example.is_symlink():
             return _blocked_section(names)
         try:
-            example_text = example.read_text(encoding="utf-8")
+            example_text = example.read_bytes().decode("utf-8")
         except OSError:
             return _blocked_section(names)
         updated, statuses, _changed = fill_yaml(example_text, assignments)
@@ -316,7 +325,7 @@ def apply_fog(root, values):
     if not path.is_file():
         return _blocked_section(names)
     try:
-        original = path.read_text(encoding="utf-8")
+        original = path.read_bytes().decode("utf-8")
     except OSError:
         return _blocked_section(names)
     updated, statuses, changed = fill_yaml(original, assignments)
@@ -339,7 +348,7 @@ def apply_wenda(root, token):
         if not example.is_file() or example.is_symlink():
             return _blocked_section(("token",))
         try:
-            example_text = example.read_text(encoding="utf-8")
+            example_text = example.read_bytes().decode("utf-8")
         except OSError:
             return _blocked_section(("token",))
         updated, status, _changed = fill_wenda(example_text, token)
@@ -350,7 +359,7 @@ def apply_wenda(root, token):
     if not path.is_file():
         return _blocked_section(("token",))
     try:
-        original = path.read_text(encoding="utf-8")
+        original = path.read_bytes().decode("utf-8")
     except OSError:
         return _blocked_section(("token",))
     updated, status, changed = fill_wenda(original, token)
@@ -392,11 +401,78 @@ def apply_local_config(root, values):
     return report, fog_unsafe or wenda_unsafe
 
 
+def gui_plan(root, values):
+    """Read-only field states and expected output bytes, kept only in memory."""
+    def read(name):
+        path = root / "config" / name
+        source = path if path.exists() or path.is_symlink() else path.with_name(name + ".example")
+        if _unsafe(root, path) or _unsafe(root, source) or not source.is_file():
+            raise ValueError("配置路径不可用")
+        return path, source.read_bytes().decode("utf-8")
+
+    path, text = read("fog_config.yaml")
+    updated, statuses, _changed = fill_yaml(text, [(p, values.get(name, ""), name) for name, p in FOG_FIELDS])
+    expected = {path: updated}
+    names = [(name, LABELS[name]) for name, _path in FOG_FIELDS]
+    if any(os.path.lexists(root / "config" / name) for name in ("lx-wenda.json", "lx-wenda.json.example")):
+        path, text = read("lx-wenda.json")
+        updated, status, _changed = fill_wenda(text, values.get("wenda_token", ""))
+        expected[path] = updated
+        statuses["wenda_token"] = status
+        names.append(("wenda_token", LABELS["token"]))
+    if "blocked" in statuses.values():
+        raise ValueError("配置格式不可用")
+    fields = [{"name": name, "label": label, "secret": name != "username", "status": statuses[name]} for name, label in names]
+    return fields, expected
+
+
+def open_config_window(root, fields):
+    from local_config_window import collect_values
+    return collect_values(root, fields)
+
+
+def run_gui(root):
+    phase = "inspect"
+    try:
+        fields, _expected = gui_plan(root, {})
+        phase = "open-window"
+        values = open_config_window(root, fields)
+        if values is None:
+            print(json.dumps({"status": "cancelled", "summary": "已取消，未写入配置"}, ensure_ascii=False))
+            return 1
+        phase = "validate"
+        if not isinstance(values, dict) or any(not isinstance(v, str) or any(c in v for c in ("\n", "\r", "\x00")) for v in values.values()):
+            raise ValueError("输入格式无效")
+        values = {key: values.get(key, "") for key in FORM_KEYS}
+        fields, expected = gui_plan(root, values)
+        if any(f["status"] == "missing" for f in fields):
+            raise ValueError("必填项未齐")
+        phase = "save"
+        report, unsafe = apply_local_config(root, values)
+        if unsafe:
+            raise ValueError("配置写入失败")
+        phase = "readback"
+        if any(_unsafe(root, path) or path.read_bytes() != text.encode("utf-8") for path, text in expected.items()):
+            raise ValueError("保存结果不一致")
+        print(json.dumps({"status": "saved", "summary": report["summary"], "readback": "verified"}, ensure_ascii=False))
+        return 0
+    except Exception:
+        # Never echo GUI inputs, file contents or raw exception text.
+        print(json.dumps({"status": "error", "phase": phase, "summary": "本机窗口或配置保存失败，请联系对接人；不要将凭据发到聊天或改用记事本填写。"}, ensure_ascii=False))
+        return 2
+
+
 def main(argv=None):
     parsed, error = parse_args(list(sys.argv[1:] if argv is None else argv))
     if error:
         print(error)
         return 2
+    if parsed["gui"]:
+        root = Path(parsed["root"]).expanduser() if parsed["root"] else ROOT
+        if not root.is_dir() or root.is_symlink():
+            print("找不到工作区")
+            return 2
+        return run_gui(root)
     form = Path(parsed["source"])
     if not form.is_file() or form.is_symlink():
         print("找不到表单文件")
