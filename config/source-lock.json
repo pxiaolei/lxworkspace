@@ -1,6 +1,6 @@
 {
   "source_repository": "p-fog",
-  "source_commit": "15091b63f6e012095f19b81549fe26403710126d",
+  "source_commit": "85983c78ea39af223894df88ab7c5fbf58021f7f",
   "files": {
     ".gitattributes": "4a5e4eb3d1994a48145f90466413e538b2612fec3a58535084c505e2e27a9ddd",
     ".gitignore": "51efebca4ba7c3a1faad9814184cff7ac0cc28686d01195120ee7497b24ae019",
@@ -180,7 +180,7 @@
     ".workbuddy/skills/lxx_share/__init__.py": "ca5fd3cd9926706bad3f5f016ad6171236321a4e26dbf1d1e5c016207e074f7d",
     ".workbuddy/skills/lxx_share/agents/openai.yaml": "9a6154d3cebabde8342113e8021a37b300b568a30a9bc393f2ad89b195943f75",
     ".workbuddy/skills/lxx_share/fog_config.py": "98f41cd92578ffaafe5155e24a9538a410788237db8ae5861f592fa85947a668",
-    "AGENTS.md": "4f4ec7c0ed51bcb0fa988c675c41f9b5eb6924929b64296bc72e31f9eba2bef3",
+    "AGENTS.md": "0478020b46d004c4e292b1590f03208b281e2bb1174d4814361943f45f38b23a",
     "PILOT.md": "7e6e0d380ed76ab7f2138ce31212d99e6acb787001f28c535e1c3743b62d908d",
     "README.md": "2de17ed535028cdabab62d123809ad3505674a74bea5a7cbc7bba8e8ebe503ae",
     "VALIDATION.md": "49c79fb2b8c4863f2964bb6d13ecd4e262538be723538a818c01b528b40afc49",
