@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "comment": "公司库性能门禁；沿用中央入口对 operator_brand 码表的明确只读全量例外，其余事实表必须限定范围。",
+  "mode": "enforce",
+  "gates": {
+    "require_where": true,
+    "forbid_select_star": true,
+    "forbid_column_function": true,
+    "explain_before_join_or_agg": true
+  },
+  "forbidden_column_functions": [
+    "TRIM",
+    "CAST",
+    "CONVERT",
+    "COLLATE",
+    "UPPER",
+    "LOWER",
+    "YEAR",
+    "MONTH",
+    "DAY",
+    "DATE",
+    "DATE_FORMAT",
+    "SUBSTRING"
+  ],
+  "explain": {
+    "max_estimated_rows": 100000,
+    "forbid_access_types": [
+      "ALL"
+    ],
+    "forbid_null_key": true
+  },
+  "where_exempt_tables": [
+    "operator_brand"
+  ]
+}

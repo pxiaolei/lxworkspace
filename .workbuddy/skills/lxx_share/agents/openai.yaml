@@ -4,4 +4,3 @@ interface:
   default_prompt: "使用 $lxx_share，先检查输入和范围，再按执行契约处理本次请求。"
 policy:
   allow_implicit_invocation: false
-

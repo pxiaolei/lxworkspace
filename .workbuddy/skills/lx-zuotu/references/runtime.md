@@ -2,7 +2,7 @@
 
 ## 环境和权限
 
-Python >=3.10；依赖为requests、Pillow、PyYAML，测试使用unittest。伙伴使用项目根tools/run_skill.py，复用现有lx-haibao/.venv；所有入口禁用字节码，不为本Skill建立第二个环境。检查不自动修复环境。
+Python >=3.10；依赖为requests、Pillow、PyYAML，测试使用unittest。工作区使用项目根tools/run_skill.py，复用现有lx-haibao/.venv；所有入口禁用字节码，不为本Skill建立第二个环境。检查不自动修复环境。
 
 初始化先运行 `python tools/run_skill.py init`，展示环境与三份依赖文件hash；确认后运行 `python tools/run_skill.py init --install --confirmed --expected-preview-hash <HASH>`。仅在既有项目虚拟环境安装，端内图与海报复用同一份KIE配置，不新增Key或全局依赖。Skill内check_runtime入口只委派同一个lx-init；缺hash或旧hash拒绝安装。普通检查不联网、不创建环境或业务文件。
 

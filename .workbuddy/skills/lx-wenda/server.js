@@ -14,7 +14,7 @@
 const readline = require('readline');
 const { loadConfig, preview, ask } = require('./client');
 const SERVER_NAME = 'lx-wenda';
-const SERVER_VERSION = '1.1.0';
+const SERVER_VERSION = '1.1.1';
 const PROTOCOL_VERSION = '2024-11-05';
 function log(...args) { process.stderr.write('[lx-wenda] ' + args.join(' ') + '\n'); }
 

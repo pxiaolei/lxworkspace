@@ -1,7 +1,6 @@
 interface:
-  display_name: "产品知识库问答"
-  short_description: "调用我方完整 MaxKB 知识库，支持预览与绑定确认的多轮问答。"
-  default_prompt: "使用 $lx-wenda，先检查输入和范围，再按执行契约处理本次请求。"
+  display_name: "宏鹄产品问答"
+  short_description: "查询宏鹄 SaaS 产品使用知识，真实问答执行门禁待完成"
+  default_prompt: "使用 $lx-wenda 检查宏鹄产品问答的可用条件，待执行门禁完成后按已授权问题查询。"
 policy:
-  allow_implicit_invocation: true
-
+  allow_implicit_invocation: false

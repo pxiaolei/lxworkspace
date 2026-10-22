@@ -1,7 +1,6 @@
 interface:
-  display_name: "更新工作区"
-  short_description: "检查官方共享仓版本，确认完整 commit 后快进并保护伙伴本机资料。"
-  default_prompt: "使用 $lx-update，先检查输入和范围，再按执行契约处理本次请求。"
+  display_name: "FOG 安全更新"
+  short_description: "检查本地改动并安全快进 FOG 到指定官方远端版本"
+  default_prompt: "使用 $lx-update 先检查本地改动和远端差异，再按确认的提交安全更新。"
 policy:
   allow_implicit_invocation: false
-

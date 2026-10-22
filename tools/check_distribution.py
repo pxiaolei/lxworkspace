@@ -9,7 +9,7 @@ import subprocess
 from brand_presets import load_manifest, verify_files
 
 ROOT = Path(__file__).resolve().parents[1]
-EXPECTED_SKILLS = {"lx_shujuku", "lx-yidongfenxi", "lx-haibao", "lx-wenda", "lx-kaquan", "lx-diaozhang", "lx-zuotu", "lx-init", "lx-update", "lxx_share"}
+EXPECTED_SKILLS = {"lx_shujuku", "lx-yidong", "lx-haibao", "lx-wenda", "lx-kaquan", "lx-diaozhang", "lx-zuotu", "lx-init", "lx-update", "lxx_share"}
 WORKSPACE_DOCS = {"workspace/README.md", "workspace/08端内宣传图/README.md"}
 
 

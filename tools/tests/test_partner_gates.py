@@ -22,9 +22,9 @@ def load(name, relative):
 
 
 query = load("partner_query_test", ".workbuddy/skills/lx_shujuku/scripts/partner_query.py")
-analysis = load("partner_analysis_test", ".workbuddy/skills/lx-yidongfenxi/scripts/run_partner_analysis.py")
+analysis = load("partner_analysis_test", ".workbuddy/skills/lx-yidong/scripts/run_partner_analysis.py")
 init = load("partner_init_test", ".workbuddy/skills/lx-init/scripts/init_workspace.py")
-update = load("partner_update_test", ".workbuddy/skills/lx-update/scripts/update_workspace.py")
+update = load("partner_update_test", ".workbuddy/skills/lx-update/scripts/update_fog.py")
 dispatcher = load("partner_dispatcher_test", "tools/run_skill.py")
 
 

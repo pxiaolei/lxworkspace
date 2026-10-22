@@ -30,6 +30,75 @@ test('unconfirmed and stale confirmations make zero HTTP requests', async () => 
   } finally { http.request = original; }
 });
 
+test('non-200 responses surface the server-side reason instead of dropping the body', async () => {
+  const stored = 'Exception:Error code: 403 - AccessDenied.Unpurchased';
+  const server = http.createServer((req, res) => {
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', () => {
+      if (req.url.endsWith('/open')) {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ code: 200, data: 'chat-test' }));
+      }
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ code: 500, message: '成功', data: { id: 'record-test', chat_id: 'chat-test', content: stored } }));
+    });
+  });
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  const cfg = { base: 'http://127.0.0.1:' + server.address().port, token: 'test-only', timeout_ms: 1000 };
+  const authorization = { confirmed: true, expected_preview_hash: preview(cfg, '测试问题').preview_hash };
+  try {
+    await assert.rejects(ask(cfg, '测试问题', '', authorization), err => {
+      assert.match(err.message, /问答 HTTP 500/);
+      assert.match(err.message, /AccessDenied\.Unpurchased/);
+      return true;
+    });
+  } finally { await new Promise(resolve => server.close(resolve)); }
+});
+
+test('an upstream exception stored as message content is not returned as an answer', async () => {
+  const calls = [];
+  const server = http.createServer((req, res) => {
+    calls.push([req.method, req.url]);
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', () => {
+      const data = req.url.endsWith('/open')
+        ? 'chat-test'
+        : { id: 'record-test', chat_id: 'chat-test', content: 'Exception:Error code: 403 - AccessDenied.Unpurchased' };
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ code: 200, data }));
+    });
+  });
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  const cfg = { base: 'http://127.0.0.1:' + server.address().port, token: 'test-only', timeout_ms: 1000 };
+  const authorization = { confirmed: true, expected_preview_hash: preview(cfg, '测试问题').preview_hash };
+  try {
+    await assert.rejects(ask(cfg, '测试问题', '', authorization), /拒绝当作答案/);
+    assert.equal(calls.length, 2);
+  } finally { await new Promise(resolve => server.close(resolve)); }
+});
+
+test('error hints never echo the configured token', async () => {
+  const server = http.createServer((req, res) => {
+    req.resume();
+    req.on('end', () => {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ code: 500, message: '鉴权失败，收到的凭据为 test-only' }));
+    });
+  });
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  const cfg = { base: 'http://127.0.0.1:' + server.address().port, token: 'test-only', timeout_ms: 1000 };
+  const authorization = { confirmed: true, expected_preview_hash: preview(cfg, '测试问题').preview_hash };
+  try {
+    await assert.rejects(ask(cfg, '测试问题', '', authorization), err => {
+      assert.doesNotMatch(err.message, /test-only/);
+      assert.match(err.message, /\[redacted\]/);
+      return true;
+    });
+  } finally { await new Promise(resolve => server.close(resolve)); }
+});
+
 test('write is verified by a separate stored-record GET and mismatches fail', async () => {
   let mismatch = false;
   let calls = [];

@@ -31,6 +31,7 @@ from urllib.error import HTTPError, URLError
 from .operator_brand import build_mabiao_mapping, normalize_operator_brand_rows
 from .query_policy import (
     analyze_query_shape,
+    check_performance_gates, evaluate_explain_plan, load_perf_gate_config, should_run_explain,
     ensure_readonly_sql,
     referenced_tables,
     top_level_order_terms,
@@ -40,6 +41,7 @@ from .query_policy import (
 from .schema import SchemaCatalog
 
 logger = logging.getLogger(__name__)
+_PERF_GATE_CONFIG_CACHE: dict[str, Any] = {}
 MAX_FULL_QUERY_PAGES = 20
 UNBOUNDED_FULL_QUERY_ALLOWLIST = {"operator_brand"}
 
@@ -301,6 +303,44 @@ class DataReportingClient:
             append_default_limit=append_default_limit,
         )
 
+    def _perf_gate_config(self) -> dict[str, Any]:
+        if not _PERF_GATE_CONFIG_CACHE:
+            _PERF_GATE_CONFIG_CACHE.update(load_perf_gate_config())
+        return _PERF_GATE_CONFIG_CACHE
+
+
+
+    def _enforce_performance_gates(
+        self,
+        safe_sql: str,
+    ) -> None:
+        """执行前性能门禁。enforce 模式拦截，warn 模式只告警。"""
+        cfg = self._perf_gate_config()
+        violations = check_performance_gates(safe_sql, cfg)
+
+        if should_run_explain(safe_sql, cfg):
+            try:
+                plan = self._execute_prepared_sql(f"EXPLAIN {safe_sql}")
+            except Exception as exc:  # noqa: BLE001 - EXPLAIN 失败必须阻止真实执行
+                violations.append(
+                    f"性能门禁 4：无法取得执行计划（{exc}），已停止本次查询。"
+                )
+            else:
+                violations.extend(evaluate_explain_plan(plan, cfg))
+
+        if not violations:
+            return
+        if str(cfg.get("mode") or "enforce").lower() == "warn":
+            for item in violations:
+                logger.warning("性能门禁(warn)：%s", item)
+            return
+        raise RuntimeError(
+            "SQL 未通过公司库性能门禁，已停止执行：\n  - "
+            + "\n  - ".join(violations)
+            + "\n请先缩小业务范围；必要的例外交维护者联系技术/DBA核对。"
+        )
+
+
     def execute(
         self,
         sql: str,
@@ -326,6 +366,7 @@ class DataReportingClient:
             enforce_table_whitelist=enforce_table_whitelist,
             default_limit=default_limit,
         )
+        self._enforce_performance_gates(safe_sql)
         return self._execute_prepared_sql(safe_sql)
 
     def execute_audited(
@@ -346,6 +387,7 @@ class DataReportingClient:
             enforce_table_whitelist=enforce_table_whitelist,
             default_limit=default_limit,
         )
+        self._enforce_performance_gates(safe_sql)
         rows = self._execute_prepared_sql(safe_sql)
         duration_ms = round((time.monotonic() - started_monotonic) * 1000, 3)
         shape = analyze_query_shape(safe_sql)
@@ -411,6 +453,7 @@ class DataReportingClient:
             enforce_table_whitelist=enforce_table_whitelist,
             append_default_limit=False,
         )
+        self._enforce_performance_gates(safe_sql)
         if not safe_sql.lstrip().lower().startswith("select"):
             raise RuntimeError("完整查询仅支持 SELECT")
 

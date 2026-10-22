@@ -11,7 +11,7 @@ import unittest
 from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[2]
-spec = importlib.util.spec_from_file_location("partner_git_update", ROOT / ".workbuddy/skills/lx-update/scripts/update_workspace.py")
+spec = importlib.util.spec_from_file_location("partner_git_update", ROOT / ".workbuddy/skills/lx-update/scripts/update_fog.py")
 update = importlib.util.module_from_spec(spec)
 sys.modules[spec.name] = update
 spec.loader.exec_module(update)

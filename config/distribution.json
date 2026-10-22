@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "kind": "lxworkspace",
+  "repository": "pxiaolei/lxworkspace",
+  "branch": "main",
+  "skills": [
+    "lx-diaozhang",
+    "lx-haibao",
+    "lx-init",
+    "lx-kaquan",
+    "lx-update",
+    "lx-wenda",
+    "lx-yidong",
+    "lx-zuotu",
+    "lx_shujuku",
+    "lxx_share"
+  ],
+  "runtime": ".workbuddy/skills/lx-haibao/.venv"
+}

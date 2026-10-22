@@ -27,7 +27,7 @@ def load(name, path):
 
 init = load("zuotu_partner_init", ROOT / ".workbuddy/skills/lx-init/scripts/init_workspace.py")
 runtime = load("zuotu_partner_runtime", SKILL / "scripts/check_runtime.py")
-update = load("zuotu_partner_update", ROOT / ".workbuddy/skills/lx-update/scripts/update_workspace.py")
+update = load("zuotu_partner_update", ROOT / ".workbuddy/skills/lx-update/scripts/update_fog.py")
 
 
 class ZuotuPartnerTests(unittest.TestCase):

@@ -47,7 +47,7 @@
     },
     {
       "id": "anomaly.company",
-      "entrypoint": ".workbuddy/skills/lx-yidongfenxi/scripts/run_partner_analysis.py",
+      "entrypoint": ".workbuddy/skills/lx-yidong/scripts/run_partner_analysis.py",
       "risk": "R1",
       "preview": "default no client/no files",
       "confirmation": "--confirmed + preview_hash",
@@ -97,7 +97,7 @@
     },
     {
       "id": "update.apply",
-      "entrypoint": ".workbuddy/skills/lx-update/scripts/update_workspace.py",
+      "entrypoint": ".workbuddy/skills/lx-update/scripts/update_fog.py",
       "risk": "R2",
       "preview": "check in isolated temporary inspection repo; target unchanged",
       "confirmation": "apply --confirmed full-commit",

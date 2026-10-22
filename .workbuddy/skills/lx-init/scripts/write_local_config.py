@@ -111,10 +111,12 @@ def parse_args(argv):
 
 
 def _unsafe(root, path):
+    root, path = root.absolute(), path.absolute()
+    if root.is_symlink() or root not in path.parents:
+        return True
     if path.is_symlink():
         return True
     current = path.parent
-    root = root.resolve()
     while True:
         if current.is_symlink():
             return True
@@ -382,7 +384,10 @@ def _summary(fog, wenda):
 
 def apply_local_config(root, values):
     fog, fog_unsafe = apply_fog(root, values)
-    wenda, wenda_unsafe = apply_wenda(root, values.get("wenda_token", ""))
+    if (root / "config/lx-wenda.json.example").is_file() or (root / "config/lx-wenda.json").is_file():
+        wenda, wenda_unsafe = apply_wenda(root, values.get("wenda_token", ""))
+    else:
+        wenda, wenda_unsafe = {"action": "not-enabled", "fields": {"token": "not-enabled"}}, False
     report = {"fog_config.yaml": fog, "lx-wenda.json": wenda, "summary": _summary(fog, wenda)}
     return report, fog_unsafe or wenda_unsafe
 

@@ -40,39 +40,28 @@ class BrandRegistryTest(unittest.TestCase):
 
 class RuntimeInstallGateTest(unittest.TestCase):
     def test_install_without_confirmation_runs_no_subprocess_or_install_step(self):
-        with patch.object(sys, "argv", ["check_runtime.py", "--install"]), patch.object(
-            runtime, "run_command"
-        ) as run_command, patch.object(runtime, "create_venv") as create_venv, patch.object(
-            runtime, "install_requirements"
-        ) as install_requirements:
-            exit_code = runtime.main()
-
-        self.assertEqual(exit_code, 2)
-        run_command.assert_not_called()
-        create_venv.assert_not_called()
-        install_requirements.assert_not_called()
+        with patch.object(runtime, "load_initializer", side_effect=AssertionError("unconfirmed install")):
+            self.assertEqual(runtime.main(["--install"]), 2)
 
     def test_confirmed_install_keeps_existing_install_flow(self):
+        import hashlib
+        import json
+        import os
+        init = runtime.load_initializer()
         with tempfile.TemporaryDirectory() as tmp:
-            venv_dir = Path(tmp) / ".venv"
-            runtime_python = venv_dir / "bin" / "python"
-            runtime_python.parent.mkdir(parents=True)
-            runtime_python.touch()
-            with patch.object(
-                sys,
-                "argv",
-                ["check_runtime.py", "--install", "--confirmed", "--venv", str(venv_dir)],
-            ), patch.object(runtime, "ensure_bootstrap_python") as ensure_bootstrap, patch.object(
-                runtime, "create_venv"
-            ) as create_venv, patch.object(runtime, "install_requirements") as install_requirements, patch.object(
-                runtime, "check_imports", return_value=True
-            ), patch.object(runtime, "check_skill", return_value=True):
-                exit_code = runtime.main()
-
-        self.assertEqual(exit_code, 0)
-        ensure_bootstrap.assert_called_once()
-        create_venv.assert_called_once()
-        install_requirements.assert_called_once_with(runtime_python.resolve(), upgrade_pip=False)
+            venv = Path(tmp).resolve() / "existing-venv"
+            python = venv / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
+            python.parent.mkdir(parents=True)
+            python.touch()
+            with patch.object(init, "VENV", venv), patch.object(init.shutil, "which", return_value="fixture"), patch.object(init.subprocess, "run") as run, patch.object(runtime, "load_initializer", return_value=init):
+                expected = hashlib.sha256(json.dumps(init.build_plan(), sort_keys=True).encode()).hexdigest()
+                self.assertEqual(runtime.main(["--install", "--confirmed", "--expected-preview-hash", expected]), 0)
+            self.assertEqual(run.call_count, 2)
+            install, readback = [item.args[0] for item in run.call_args_list]
+            self.assertEqual(install[0], str(python))
+            self.assertEqual(readback[0], str(python))
+            self.assertIn("pip", install)
+            self.assertIn("runtime imports verified", readback[-1])
 
 
 class PosterSafetyGateTest(unittest.TestCase):

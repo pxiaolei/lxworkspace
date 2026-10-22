@@ -465,3 +465,151 @@ def _mask_string_literals(sql: str) -> str:
             chars.append(char)
 
     return "".join(chars)
+
+
+PERF_GATE_DEFAULTS: dict = {
+    "mode": "enforce",
+    "gates": {
+        "require_where": True,
+        "forbid_select_star": True,
+        "forbid_column_function": True,
+        "explain_before_join_or_agg": True,
+    },
+    "forbidden_column_functions": [
+        "TRIM", "CAST", "CONVERT", "COLLATE", "UPPER", "LOWER",
+        "YEAR", "MONTH", "DAY", "DATE", "DATE_FORMAT", "SUBSTRING",
+    ],
+    "explain": {
+        "max_estimated_rows": 100000,
+        "forbid_access_types": ["ALL"],
+        "forbid_null_key": True,
+    },
+    "where_exempt_tables": [],
+}
+
+
+def load_perf_gate_config(path: str | None = None) -> dict:
+    """读取性能门禁配置；文件缺失或损坏时回退到保守默认值。"""
+    import json
+    import os
+
+    if path is None:
+        base = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        path = os.path.join(base, "assets", "perf_gate_config.json")
+
+    try:
+        with open(path, "r", encoding="utf-8") as handle:
+            loaded = json.load(handle)
+    except (OSError, ValueError):
+        return dict(PERF_GATE_DEFAULTS)
+
+    merged = dict(PERF_GATE_DEFAULTS)
+    merged.update(loaded)
+    merged["gates"] = {**PERF_GATE_DEFAULTS["gates"], **(loaded.get("gates") or {})}
+    merged["explain"] = {**PERF_GATE_DEFAULTS["explain"], **(loaded.get("explain") or {})}
+    return merged
+
+
+def _predicate_segment(sql: str) -> str:
+    """取 FROM 之后的谓词片段：JOIN ON、WHERE、HAVING；剔除 GROUP BY 与 ORDER BY。"""
+    masked = _mask_string_literals(sql)
+    match = re.search(r"\bfrom\b", masked, re.IGNORECASE)
+    if not match:
+        return ""
+    tail = masked[match.end():]
+    tail = re.sub(r"\border\s+by\b.+?(?=\blimit\b|$)", " ", tail, flags=re.IGNORECASE)
+    tail = re.sub(
+        r"\bgroup\s+by\b.+?(?=\bhaving\b|\border\b|\blimit\b|$)",
+        " ",
+        tail,
+        flags=re.IGNORECASE,
+    )
+    return tail
+
+
+def check_performance_gates(sql: str, config: dict | None = None) -> list[str]:
+    """静态性能门禁。返回违规说明列表，空列表表示通过。"""
+    cfg = config or load_perf_gate_config()
+    gates = cfg.get("gates") or {}
+    violations: list[str] = []
+
+    normalized = _strip_trailing_semicolon(sql)
+    masked = _mask_string_literals(normalized).lower()
+    match = re.match(r"\s*([A-Za-z]+)\b", masked)
+    if not match or match.group(1) != "select":
+        return violations
+
+    exempt = {table.lower() for table in (cfg.get("where_exempt_tables") or [])}
+    tables = [table.lower() for table in _extract_table_references(masked)]
+
+    if gates.get("require_where") and not re.search(r"\bwhere\b", masked):
+        if not (tables and exempt and all(table in exempt for table in tables)):
+            violations.append(
+                "性能门禁 1：查询缺少 WHERE 过滤。"
+                "请补充日期范围，或品牌、城市等能缩小业务范围的条件。"
+            )
+
+    if gates.get("forbid_select_star"):
+        if re.search(r"\bselect\s+\*", masked):
+            violations.append("性能门禁 2：禁止 SELECT *。请只写出本次任务需要的列。")
+        elif re.search(r"\bselect\b.*?\b[a-z_][a-z0-9_]*\s*\.\s*\*", masked):
+            violations.append("性能门禁 2：禁止 SELECT 别名.*。请只写出本次任务需要的列。")
+
+    if gates.get("forbid_column_function"):
+        segment = _predicate_segment(normalized)
+        upper = segment.upper()
+        for func in cfg.get("forbidden_column_functions") or []:
+            if re.search(rf"\b{re.escape(str(func).upper())}\s*\(", upper):
+                violations.append(
+                    f"性能门禁 3：WHERE/JOIN 条件中禁止对字段使用 {str(func).upper()}()，"
+                    "会导致索引失效。请改用裸字段比较或半开区间范围条件。"
+                )
+        if re.search(r"\blike\s+['\"]%", normalized, re.IGNORECASE):
+            violations.append(
+                "性能门禁 3：禁止前导通配 LIKE '%x'，索引会失效。请改用前缀匹配或等值条件。"
+            )
+
+    return violations
+
+
+def should_run_explain(sql: str, config: dict | None = None) -> bool:
+    """含 JOIN 或 GROUP BY 的 SELECT 需要在真实执行前先取执行计划。"""
+    cfg = config or load_perf_gate_config()
+    if not (cfg.get("gates") or {}).get("explain_before_join_or_agg"):
+        return False
+    masked = _mask_string_literals(_strip_trailing_semicolon(sql)).lower()
+    if not re.match(r"\s*select\b", masked):
+        return False
+    return bool(re.search(r"\bjoin\b", masked) or re.search(r"\bgroup\s+by\b", masked))
+
+
+def evaluate_explain_plan(plan_rows: list[dict], config: dict | None = None) -> list[str]:
+    """根据 EXPLAIN 结果判断是否放行。返回违规说明列表。"""
+    cfg = config or load_perf_gate_config()
+    explain_cfg = cfg.get("explain") or {}
+    max_rows = int(explain_cfg.get("max_estimated_rows", 100000) or 0)
+    forbid_types = {str(t).upper() for t in (explain_cfg.get("forbid_access_types") or [])}
+    forbid_null_key = bool(explain_cfg.get("forbid_null_key", True))
+
+    violations: list[str] = []
+    for row in plan_rows or []:
+        table = str(row.get("table") or "?")
+        access = str(row.get("type") or "").upper()
+        key = row.get("key")
+        try:
+            estimated = int(row.get("rows") or 0)
+        except (TypeError, ValueError):
+            estimated = 0
+        if estimated < max_rows:
+            continue
+        if access in forbid_types:
+            violations.append(
+                f"性能门禁 4：表 {table} 执行计划为 type={access or 'NULL'}，"
+                f"估算扫描 {estimated:,} 行（阈值 {max_rows:,}）。"
+            )
+        elif forbid_null_key and not key:
+            violations.append(
+                f"性能门禁 4：表 {table} 执行计划 key=NULL，"
+                f"估算扫描 {estimated:,} 行（阈值 {max_rows:,}）。"
+            )
+    return violations
