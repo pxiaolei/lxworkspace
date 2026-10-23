@@ -1,6 +1,6 @@
 ---
 name: lx-update
-description: "检查官方共享仓版本，确认完整 commit 后快进并保护本机资料。"
+description: "检查当前工作区绑定仓库的版本，确认完整 commit 后更新并保护本机配置与业务文件。"
 ---
 
 # 更新工作区

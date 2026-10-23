@@ -128,3 +128,92 @@ test('write is verified by a separate stored-record GET and mismatches fail', as
     await assert.rejects(ask(cfg, '测试问题', '', authorization), /读回不一致/);
   } finally { await new Promise(resolve => server.close(resolve)); }
 });
+
+async function withAnswer(content, callback) {
+  const server = http.createServer((req, res) => {
+    req.resume();
+    req.on('end', () => {
+      const data = req.url.endsWith('/open') ? 'chat-test'
+        : req.method === 'POST' ? { id: 'record-test', chat_id: 'chat-test', content }
+        : [{ id: 'record-test', chat_id: 'chat-test', problem_text: '测试问题', answer_text: content }];
+      res.end(JSON.stringify({ code: 200, data }));
+    });
+  });
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  const cfg = { base: 'http://127.0.0.1:' + server.address().port, token: 'test-only', timeout_ms: 1000 };
+  try { await callback(() => ask(cfg, '测试问题', '', {
+    confirmed: true, expected_preview_hash: preview(cfg, '测试问题').preview_hash
+  })); } finally { await new Promise(resolve => server.close(resolve)); }
+}
+
+test('knowledge answers explaining error codes and exceptions remain valid', async () => {
+  for (const answer of [
+    '如果页面显示 Error code: 403，请联系管理员检查功能权限。',
+    'Exception 表示程序异常；AccessDenied.Unpurchased 表示模型权限需要检查。',
+    'Error code: 403 表示没有访问权限，请联系管理员。'
+  ]) {
+    await withAnswer(answer, async run => {
+      const result = await run();
+      assert.equal(result.answer, answer);
+      assert.equal(result.readback_verified, true);
+    });
+  }
+});
+
+test('known raw provider error envelopes remain rejected', async () => {
+  for (const answer of [
+    'Exception:Error code: 403 - AccessDenied.Unpurchased',
+    'Error code: 403 - {"error":{"code":"AccessDenied.Unpurchased"}}',
+    'AccessDenied.Unpurchased'
+  ]) await withAnswer(answer, async run => assert.rejects(run(), /拒绝当作答案/));
+});
+
+test('empty and whitespace answers are not reported as successful answers', async () => {
+  for (const answer of ['', ' \n\t ']) {
+    await withAnswer(answer, async run => assert.rejects(run(), /未获得有效答案/));
+  }
+});
+
+test('socket timeout remains per-request and preserves its reason', async () => {
+  const { EventEmitter } = require('events');
+  const original = http.request;
+  let timeout;
+  http.request = (url, options) => {
+    timeout = options.timeout;
+    const req = new EventEmitter();
+    req.end = () => process.nextTick(() => req.emit('timeout'));
+    req.destroy = err => process.nextTick(() => req.emit('error', err));
+    return req;
+  };
+  const cfg = { base: 'http://127.0.0.1:1', token: 'test-only', timeout_ms: 120000 };
+  try {
+    await assert.rejects(ask(cfg, '测试问题', '', {
+      confirmed: true, expected_preview_hash: preview(cfg, '测试问题').preview_hash
+    }), err => {
+      assert.match(err.message, /问答请求超时/);
+      assert.doesNotMatch(err.message, /网络请求失败/);
+      return true;
+    });
+    assert.equal(timeout, 120000);
+  } finally { http.request = original; }
+});
+
+test('ordinary network errors remain sanitized', async () => {
+  const { EventEmitter } = require('events');
+  const original = http.request;
+  http.request = () => {
+    const req = new EventEmitter();
+    req.end = () => process.nextTick(() => req.emit('error', new Error('private detail test-only')));
+    return req;
+  };
+  const cfg = { base: 'http://127.0.0.1:1', token: 'test-only', timeout_ms: 1000 };
+  try {
+    await assert.rejects(ask(cfg, '测试问题', '', {
+      confirmed: true, expected_preview_hash: preview(cfg, '测试问题').preview_hash
+    }), err => {
+      assert.match(err.message, /网络请求失败/);
+      assert.doesNotMatch(err.message, /private detail|test-only/);
+      return true;
+    });
+  } finally { http.request = original; }
+});

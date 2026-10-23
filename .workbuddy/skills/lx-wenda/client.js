@@ -55,7 +55,8 @@ function errorHint(buffer, parsed, token) {
 
 // MaxKB 会把上游异常（如模型 403）写进 content 当消息正文保存，这类文本不是答案。
 function isErrorText(text) {
-  return /^\s*Exception\b/i.test(text) || /\bAccessDenied\.\w+|Error code:\s*\d{3}\b/.test(text);
+  // 只识别已知的裸异常封套，不按正常答案中提到的错误码判错。
+  return /^\s*(?:Exception\s*:\s*)?(?:Error code:\s*\d{3}\s*-\s*(?:\{|AccessDenied\.)|AccessDenied\.\w+\s*$)/i.test(text);
 }
 
 function request(cfg, route, method = 'GET', body = null) {
@@ -78,8 +79,10 @@ function request(cfg, route, method = 'GET', body = null) {
         resolve(parsed.data);
       });
     });
-    req.on('timeout', () => req.destroy(new Error('问答请求超时')));
-    req.on('error', () => reject(new Error('问答网络请求失败；请检查本机网络和服务配置')));
+    req.on('timeout', () => req.destroy(Object.assign(new Error('问答请求超时'), { code: 'MAXKB_TIMEOUT' })));
+    req.on('error', err => reject(new Error(err.code === 'MAXKB_TIMEOUT'
+      ? '问答请求超时；服务端可能仍在处理，请勿自动重试'
+      : '问答网络请求失败；请检查本机网络和服务配置')));
     if (payload) req.write(payload);
     req.end();
   });
@@ -93,6 +96,8 @@ async function ask(cfg, question, chatId = '', authorization = {}) {
   if (typeof cid !== 'string' || !/^[a-zA-Z0-9-]{1,128}$/.test(cid)) throw new Error('创建会话返回无效 ID；不自动重试');
   const result = await request(cfg, 'chat_message/' + encodeURIComponent(cid), 'POST', { message: plan.question, stream: false, re_chat: false });
   if (!result || !result.id || (result.chat_id && result.chat_id !== cid) || typeof result.content !== 'string') throw new Error('问答结果缺少可读回记录；可能已写入，请人工检查，勿自动重试');
+  const answer = result.content.trim();
+  if (!answer) throw new Error('未获得有效答案；服务端可能已保存消息，请勿自动重试');
   // 上游异常会被服务端当消息正文存下来，不能进入读回校验后原样返回给用户。
   if (isErrorText(result.content)) throw new Error('问答返回异常文本，已拒绝当作答案 ' + clip(result.content, cfg.token) + '；可能已写入，请人工检查，勿自动重试');
   // The detail endpoint may read process cache. The official history-list
@@ -101,7 +106,6 @@ async function ask(cfg, question, chatId = '', authorization = {}) {
   const record = Array.isArray(records) ? records.find(item => item.id === result.id) : null;
   // 返回值与读回比对使用同一归一化口径：服务端存储时可能对首尾空白做处理，
   // 若比对用原始值而返回用 trim 后的值，会把一次成功写入误报成读回不一致。
-  const answer = result.content.trim();
   if (!record || record.id !== result.id || record.chat_id !== cid
     || String(record.problem_text || '').trim() !== plan.question
     || String(record.answer_text || '').trim() !== answer) throw new Error('问答独立读回不一致；可能已写入，请人工检查，勿自动重试');

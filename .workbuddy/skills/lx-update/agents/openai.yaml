@@ -1,6 +1,6 @@
 interface:
-  display_name: "FOG 安全更新"
-  short_description: "检查本地改动并安全快进 FOG 到指定官方远端版本"
+  display_name: "更新工作区"
+  short_description: "检查当前工作区版本，确认后更新并保留本机配置与业务文件"
   default_prompt: "使用 $lx-update 先检查本地改动和远端差异，再按确认的提交安全更新。"
 policy:
   allow_implicit_invocation: false
