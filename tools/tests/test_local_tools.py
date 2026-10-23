@@ -62,9 +62,9 @@ class LocalToolsTest(unittest.TestCase):
                     source.write_text(json.dumps([{"driver_id": "00123456789012345678", "driver_name": "示例司机", "amount_yuan": "25"}]), encoding="utf-8")
                     original = source.read_bytes()
                     before = set(directory.iterdir())
-                    self.run_tool("diaozhang", kind, source, output, dry_run=True)
+                    self.run_tool("tiaozhang", kind, source, output, dry_run=True)
                     self.assertEqual(set(directory.iterdir()), before)
-                    result = self.run_tool("diaozhang", kind, source, output)
+                    result = self.run_tool("tiaozhang", kind, source, output)
                     self.assertEqual(result["readback"], "passed")
                     self.assertEqual(source.read_bytes(), original)
                     self.assertTrue(output.read_bytes().startswith(b"\xef\xbb\xbf"))
@@ -73,6 +73,16 @@ class LocalToolsTest(unittest.TestCase):
                     self.assertEqual(rows[0]["driver_id"], "00123456789012345678")
                     self.assertEqual(rows[0]["amount_yuan"], "25.00")
                     self.assertEqual(rows[0]["desc"], description)
+
+    def test_legacy_adjustment_command_matches_tiaozhang(self):
+        with tempfile.TemporaryDirectory(prefix="adjustment alias ") as tmp:
+            directory = Path(tmp)
+            source = directory / "input.json"
+            source.write_text(json.dumps([{"driver_id": "00123", "driver_name": "示例司机", "amount_yuan": "25"}]), encoding="utf-8")
+            current, legacy = directory / "current.csv", directory / "legacy.csv"
+            self.run_tool("tiaozhang", "credit", source, current)
+            self.run_tool("diaozhang", "credit", source, legacy)
+            self.assertEqual(current.read_bytes(), legacy.read_bytes())
 
 
 if __name__ == "__main__":

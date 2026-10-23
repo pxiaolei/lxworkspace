@@ -1,9 +1,9 @@
 ---
-name: lx-diaozhang
-description: 生成司机补款或扣款调账 CSV，按自带模板校验必填字段、金额范围与精度，移除输出中的说明行并读回验证。用户要求调账模板、补款文件、扣款文件或 lx-diaozhang 时使用。
+name: lx-tiaozhang
+description: 生成司机补款或扣款调账 CSV，按自带模板校验必填字段、金额范围与精度，移除输出中的说明行并读回验证。用户要求调账模板、补款文件、扣款文件或 lx-tiaozhang 时使用。
 ---
 
-# lx-diaozhang 调账 CSV 生成
+# lx-tiaozhang 调账 CSV 生成
 
 将用户提供的司机数据生成本地调账 CSV。AI 收集和整理数据，使用 `scripts/generate_adjustment.py` 完成校验、输出和读回；最终文件遵守 `assets/` 内两份模板及以下规则。
 
@@ -80,13 +80,13 @@ CSV 不保存 Excel 的单元格类型，能够保留 `25.00` 这样的完整金
 在本仓执行预检：
 
 ```bash
-python -B .workbuddy/skills/lx-diaozhang/scripts/generate_adjustment.py --type credit --input "input.json" --output "credit_adjustment.csv" --dry-run
+python -B .workbuddy/skills/lx-tiaozhang/scripts/generate_adjustment.py --type credit --input "input.json" --output "credit_adjustment.csv" --dry-run
 ```
 
 生成文件：
 
 ```bash
-python -B .workbuddy/skills/lx-diaozhang/scripts/generate_adjustment.py --type credit --input "input.json" --output "credit_adjustment.csv"
+python -B .workbuddy/skills/lx-tiaozhang/scripts/generate_adjustment.py --type credit --input "input.json" --output "credit_adjustment.csv"
 ```
 
 扣款将 `--type` 改为 `debit`，输出名使用 `debit_adjustment.csv`。其他软件通过完整 Skill 目录导入/发现；将命令中的入口换成该 Skill 所在路径即可，不改变业务逻辑。Windows 可把 `python -B` 换成 `py -3 -B`。不同平台的技能发现、Windows 和后台接受仍须在目标环境实际验收。
@@ -94,7 +94,7 @@ python -B .workbuddy/skills/lx-diaozhang/scripts/generate_adjustment.py --type c
 测试：
 
 ```bash
-python -B -m unittest discover -s .workbuddy/skills/lx-diaozhang/tests -p "test_*.py"
+python -B -m unittest discover -s .workbuddy/skills/lx-tiaozhang/tests -p "test_*.py"
 ```
 
 ## 权限边界

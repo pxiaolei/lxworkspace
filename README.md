@@ -57,7 +57,7 @@ Windows + WorkBuddy 合作伙伴工作区。提供公司库查询、基础异动
 
 Skill 统一保存在 `.workbuddy/skills`，直接由 WorkBuddy 加载。
 
-卡券、调账分别通过 `python tools/run_skill.py kaquan ...`、`python tools/run_skill.py diaozhang ...` 执行。卡券依赖 openpyxl，由初始化入口经确认后装入现有项目虚拟环境；调账不增加第三方依赖。任务材料放 `workspace/06后台操作/卡券生成/` 或 `调账文件/` 下的新任务目录，细则见 `workspace/README.md`。
+卡券、调账分别通过 `python tools/run_skill.py kaquan ...`、`python tools/run_skill.py tiaozhang ...` 执行。卡券依赖 openpyxl，由初始化入口经确认后装入现有项目虚拟环境；调账不增加第三方依赖。任务材料放 `workspace/06后台操作/卡券生成/` 或 `调账文件/` 下的新任务目录，细则见 `workspace/README.md`。
 
 端内宣传图通过 `python tools/run_skill.py zuotu ...` 执行，覆盖首页、开屏、透明弹窗、侧边栏和权益中心5类8规格。lx-init将端内图依赖合并到已有项目虚拟环境，不另建环境或新增Key；继续使用本工作区的KIE配置。活动输入、样张、正式图和核验证据放 `workspace/08端内宣传图/<活动名>/`，目录规则见该区域README。代码与14张必要风格图已分发并获公开授权；参考图只指导风格，不得作为当前活动事实。
 
@@ -82,3 +82,7 @@ python -B tools/run_tests.py
 ## 基础异动名称
 
 基础异动使用 `lx-yidong`，与维护者使用的完整异动分析区分。伙伴无需了解私人工作区或历史命名。
+
+## 调账名称
+
+调账使用 `lx-tiaozhang`，主要命令为 `python tools/run_skill.py tiaozhang ...`；旧命令 `diaozhang` 仍指向同一实现，不保留旧 Skill 副本。目录改名会触发旧版本更新器的拒删保护，遇到提示请联系对接人，在新目录安装或单独确认迁移；不要强制覆盖或删除旧资料。

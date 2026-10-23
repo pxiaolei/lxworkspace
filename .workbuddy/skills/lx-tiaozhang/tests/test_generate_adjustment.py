@@ -19,7 +19,7 @@ HEADER = ["driver_id", "driver_name", "amount_yuan", "order_list", "activity_id"
 
 class AdjustmentTests(unittest.TestCase):
     def setUp(self):
-        self.root = Path(tempfile.mkdtemp(prefix="lx-diaozhang-test-"))
+        self.root = Path(tempfile.mkdtemp(prefix="lx-tiaozhang-test-"))
         self.input = self.root / "input.json"
         self.output = self.root / "result.csv"
 

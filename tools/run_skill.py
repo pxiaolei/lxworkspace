@@ -12,9 +12,11 @@ SKILLS = ROOT / ".workbuddy/skills"
 
 def main(argv=None):
     argv = list(sys.argv[1:] if argv is None else argv)
-    scripts = {"init": "lx-init/scripts/init_workspace.py", "init-runtime": "lx-init/scripts/bootstrap_runtime.py", "init-config": "lx-init/scripts/write_local_config.py", "update": "lx-update/scripts/update_fog.py", "database": "lx_shujuku/scripts/partner_query.py", "anomaly": "lx-yidong/scripts/run_partner_analysis.py", "poster": "lx-haibao/scripts/run_poster_batch.py", "kaquan": "lx-kaquan/scripts/generate_cards.py", "diaozhang": "lx-diaozhang/scripts/generate_adjustment.py", "zuotu": "lx-zuotu/scripts/run_zuotu_batch.py"}
+    if argv and argv[0] == "diaozhang":
+        argv[0] = "tiaozhang"  # Compatibility with previously documented commands.
+    scripts = {"init": "lx-init/scripts/init_workspace.py", "init-runtime": "lx-init/scripts/bootstrap_runtime.py", "init-config": "lx-init/scripts/write_local_config.py", "update": "lx-update/scripts/update_fog.py", "database": "lx_shujuku/scripts/partner_query.py", "anomaly": "lx-yidong/scripts/run_partner_analysis.py", "poster": "lx-haibao/scripts/run_poster_batch.py", "kaquan": "lx-kaquan/scripts/generate_cards.py", "tiaozhang": "lx-tiaozhang/scripts/generate_adjustment.py", "zuotu": "lx-zuotu/scripts/run_zuotu_batch.py"}
     if not argv or argv[0] not in set(scripts) | {"wenda", "wenda-selftest"}:
-        print("Usage: python tools/run_skill.py init|init-runtime|init-config|update|database|anomaly|poster|wenda|kaquan|diaozhang|zuotu [arguments]")
+        print("Usage: python tools/run_skill.py init|init-runtime|init-config|update|database|anomaly|poster|wenda|kaquan|tiaozhang|zuotu [arguments]")
         return 1
     skill = argv.pop(0)
     entry = SKILLS / ("lx-wenda/ask.js" if skill.startswith("wenda") else scripts[skill])

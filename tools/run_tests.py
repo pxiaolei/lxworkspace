@@ -22,7 +22,7 @@ def main():
                 [sys.executable, "-B", "-m", "unittest", "discover", "-s", ".workbuddy/skills/lx-haibao/tests"],
                 [sys.executable, "-B", "-m", "unittest", "discover", "-s", ".workbuddy/skills/lx-zuotu/tests"],
                 [sys.executable, "-B", "-m", "unittest", "discover", "-s", ".workbuddy/skills/lx-kaquan/tests"],
-                [sys.executable, "-B", "-m", "unittest", "discover", "-s", ".workbuddy/skills/lx-diaozhang/tests"],
+                [sys.executable, "-B", "-m", "unittest", "discover", "-s", ".workbuddy/skills/lx-tiaozhang/tests"],
                 [sys.executable, "-B", "-m", "unittest", "discover", "-s", "tools/tests"],
                 ["node", "--test", ".workbuddy/skills/lx-wenda/test_safety.js"]]
     return max(subprocess.run(command, cwd=ROOT, env=env).returncode for command in commands)

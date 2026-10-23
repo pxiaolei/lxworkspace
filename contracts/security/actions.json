@@ -20,18 +20,18 @@
     },
     {
       "id": "diaozhang.preview",
-      "entrypoint": ".workbuddy/skills/lx-diaozhang/scripts/generate_adjustment.py",
+      "entrypoint": ".workbuddy/skills/lx-tiaozhang/scripts/generate_adjustment.py",
       "risk": "R0",
       "preview": "--dry-run; no directory/output/log/install/network writes",
       "status": "offline-verified"
     },
     {
       "id": "diaozhang.generate",
-      "entrypoint": ".workbuddy/skills/lx-diaozhang/scripts/generate_adjustment.py",
+      "entrypoint": ".workbuddy/skills/lx-tiaozhang/scripts/generate_adjustment.py",
       "risk": "R1",
       "preview": "--dry-run; validate complete batch",
       "confirmation": "user requests local file; refuses existing/symlink output; no real account adjustment",
-      "negative_test": ".workbuddy/skills/lx-diaozhang/tests/test_generate_adjustment.py",
+      "negative_test": ".workbuddy/skills/lx-tiaozhang/tests/test_generate_adjustment.py",
       "readback": "independent saved CSV readback of BOM, CRLF, fields, rows and amount text",
       "status": "offline-verified"
     },
