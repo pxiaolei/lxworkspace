@@ -63,7 +63,9 @@
 
 更新统一调用 `lx-update`，从 `https://github.com/pxiaolei/lxworkspace` 的 `main` 分支检查。先展示变更和完整目标 commit，用户确认后由更新器执行快进；不自行运行其他更新流程。更新检查可使用自动清理的隔离临时 Git 仓，不改变当前工作区的 HEAD、refs、index、配置或业务文件。
 
-发现本地改动、分叉、路径冲突、远端删除或受保护路径变更时停止并联系对接人。不自行 stash、reset、强制覆盖、删除或合并。预置品牌更新须符合 `contracts/partner-brand-presets.json` 的路径与 hash；真实配置、自定义资料、业务文件、缓存和运行环境继续受保护。不为安装或更新放宽这些规则。
+更新器按 `config/workspace-release.json` 与新旧来源锁核验版本和逐文件迁移；已声明、旧原文hash匹配、替代文件受新锁管理的工程退役，可在完整范围确认后执行。未声明删除、额外本机资料、本地改动、分叉、冲突或保护路径变更时停止联系对接人。不自行 stash、reset、强制覆盖、删除或合并。预置品牌仍须符合 `contracts/partner-brand-presets.json` 的路径与hash；真实配置、自定义资料、业务文件、缓存和环境继续保护。
+
+旧更新器不能进入新版时，仅使用对接人提供的固定commit及SHA256核验过的 `tools/bootstrap_update.py`，在工作区外临时目录按Skill说明先check再确认apply。这是受支持的首次引导，不是手改工具或放宽白名单；成功后仍用lx-update。失败核对实际HEAD并保留现场，不自动回滚。
 
 更新后按现有工具检查版本、Skill 索引和分发边界；若检查失败，报告结果并联系对接人，不编辑文件“修复”检查。普通使用不需要本地开发、commit 或 push；此类操作必须有用户针对具体操作的明确授权。
 

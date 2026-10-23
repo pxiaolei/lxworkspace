@@ -1,6 +1,6 @@
 interface:
   display_name: "更新工作区"
   short_description: "检查当前工作区版本，确认后更新并保留本机配置与业务文件"
-  default_prompt: "使用 $lx-update 先检查本地改动和远端差异，再按确认的提交安全更新。"
+  default_prompt: "使用 $lx-update 检查本机状态、发布版本和迁移清单，展示后按确认的完整提交安全更新。"
 policy:
   allow_implicit_invocation: false

@@ -51,7 +51,7 @@ Windows + WorkBuddy 合作伙伴工作区。提供公司库查询、基础异动
 - “问答：司机端活动配置怎么操作？”问答先预览，确认后调用。
 - “按这些活动信息生成免佣卡/飞涨卡文件。”收集必填项、预检后生成 XLSX，并读回验证；不创建真实卡券。
 - “把这份司机补款/扣款数据生成调账文件。”预检后生成 CSV 并读回验证；不执行真实调账。
-- “更新 Skill。”先展示远端完整 commit 与变化，再确认快进。
+- “`/lx-update` 检查更新。”先展示版本、远端完整commit、文件变化与迁移清单，再确认升级。
 
 命令统一通过 `python tools/run_skill.py ...`（Windows 可用 `tools\lx.cmd ...`）；WorkBuddy 按各 Skill 契约组织参数。你不需要操作 Git 命令。
 
@@ -69,7 +69,7 @@ python -B tools/check_distribution.py
 python -B tools/run_tests.py
 ```
 
-公共代码真源在 p-fog，文件和 hash 见 `config/source-lock.json`；入口和文档也由 p-fog 维护后分发。代码不在伙伴本机手改，使用更新入口接收升级。更新禁止删除、强制覆盖或改真实配置；遇本地改动联系我方处理。
+公共代码真源在 p-fog，文件和hash见 `config/source-lock.json`；入口和文档由p-fog维护后分发，不在本机手改。更新按 `config/workspace-release.json` 审核版本与迁移，明确声明且旧/新hash符合的工程退役在确认后处理；其他删除、强制覆盖或改真实配置仍禁止。遇本地改动或额外资料停止联系对接人。
 
 伙伴从当前版本全新安装，使用上面的安装提示词即可。
 
@@ -85,4 +85,19 @@ python -B tools/run_tests.py
 
 ## 调账名称
 
-调账使用 `lx-tiaozhang`，主要命令为 `python tools/run_skill.py tiaozhang ...`；旧命令 `diaozhang` 仍指向同一实现，不保留旧 Skill 副本。目录改名会触发旧版本更新器的拒删保护，遇到提示请联系对接人，在新目录安装或单独确认迁移；不要强制覆盖或删除旧资料。
+调账使用 `lx-tiaozhang`，主要命令为 `python tools/run_skill.py tiaozhang ...`；旧命令 `diaozhang` 指向同一实现，不保留旧Skill副本。80d6179旧更新器会拦住目录改名，首次按下方固定版本引导处理；后续正常使用lx-update，不手改白名单或删除旧资料。
+
+## 旧测试工作区首次升级
+
+请对接人提供固定发布的完整commit与引导脚本SHA256，再把下面提示词发给WorkBuddy，替换两个占位符：
+
+```text
+将当前工作区升级到提供方确认的发布版本 <40位COMMIT>。
+这次授权使用该固定版本的官方 tools/bootstrap_update.py 进行一次升级引导。
+从 https://raw.githubusercontent.com/pxiaolei/lxworkspace/<同一40位COMMIT>/tools/bootstrap_update.py 下载到工作区外的系统临时目录，先核对SHA256必须等于 <提供方给出的SHA256>，不符就停止。
+不要手改工作区代码、白名单、Git历史或凭据。使用下载并核验的脚本，运行 python <临时脚本路径> --repo <当前工作区绝对路径> --commit <同一40位COMMIT> check。
+展示版本、完整提交、文件变化和工程退役清单，等我确认后再运行相同脚本的 apply --confirmed <同一40位COMMIT>。
+失败保留现场，不自行绕过或回滚。成功后检查版本和本机资料保留情况；后续统一使用 /lx-update。
+```
+
+新版不要求重填账号或重装运行环境。新伙伴直接用本页安装提示词，不需要这次引导。每次发布递增版本号，不能只改内容而沿用旧发布版本；固定commit失效或远端有新发布时，重新取得版本并确认。

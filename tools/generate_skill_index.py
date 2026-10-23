@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import sys
 from dataclasses import dataclass
@@ -116,8 +117,14 @@ def _cell(value: str) -> str:
 
 
 def render_index(records: list[SkillRecord]) -> str:
+    title = ROOT.name
+    profile = ROOT / "config/distribution.json"
+    if profile.is_file():
+        repository = json.loads(profile.read_text(encoding="utf-8")).get("repository")
+        if repository in {"pxiaolei/FOG", "pxiaolei/lxworkspace"}:
+            title = repository.split("/")[1]
     lines = [
-        f"# {ROOT.name} Skill 索引",
+        f"# {title} Skill 索引",
         "",
         "> 本文件由 `python3 tools/generate_skill_index.py` 根据真实目录生成；不要手工维护 Skill 清单。具体流程、输入输出和安全边界以各 Skill 的 `SKILL.md` 为准。",
         "",

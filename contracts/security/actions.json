@@ -98,12 +98,13 @@
     {
       "id": "update.apply",
       "entrypoint": ".workbuddy/skills/lx-update/scripts/update_fog.py",
-      "risk": "R2",
-      "preview": "check in isolated temporary inspection repo; target unchanged",
+      "risk": "R4",
+      "preview": "show versions, full commit, changed paths and source-locked retirement declarations",
       "confirmation": "apply --confirmed full-commit",
       "negative_test": "tools/tests/test_partner_gates.py::test_stale_update_confirmation_does_not_fetch_or_merge_target",
-      "readback": "HEAD/origin and clean worktree + index/distribution",
-      "status": "offline-verified"
+      "readback": "HEAD/origin/main, clean worktree, Skill index and distribution integrity; no auto reset",
+      "status": "offline-verified",
+      "rollback": "Preserve the before commit printed in check and Git history; stop and retain failure state, recover exact engineering files from the old commit only with separate authorization; never reset or touch local configuration/business data automatically."
     },
     {
       "id": "wenda.cli",
@@ -288,6 +289,17 @@
       "readback": "delegate final artifact/import readback",
       "status": "delegated",
       "delegate": "init.install"
+    },
+    {
+      "id": "update.bootstrap",
+      "entrypoint": "tools/bootstrap_update.py",
+      "risk": "R4",
+      "preview": "fixed commit check using verified tools in temporary directory; original workspace unchanged",
+      "confirmation": "apply --confirmed matching fixed full commit; explicit complete migration range",
+      "negative_test": ".workbuddy/skills/lx-update/tests/test_bootstrap_update.py",
+      "readback": "independent HEAD/origin/main and clean status, then normal update checks",
+      "rollback": "Preserve the before commit printed in check and Git history; stop and retain failure state, recover exact engineering files from the old commit only with separate authorization; never reset or touch local configuration/business data automatically.",
+      "status": "offline-verified"
     }
   ]
 }

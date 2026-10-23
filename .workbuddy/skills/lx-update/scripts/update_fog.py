@@ -16,7 +16,9 @@ from pathlib import Path, PurePosixPath
 from typing import Optional
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[4] / "tools"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 from brand_presets import MANIFEST, parse_manifest
+from release_migrations import RELEASE_PATH, LOCK_PATH, parse_release, parse_source_lock, approved_retirements
 
 
 ROOT = Path(__file__).resolve().parents[4]
@@ -59,11 +61,15 @@ class UpdatePlan:
     relation: str
     changes: tuple[ChangedPath, ...]
     blockers: tuple[str, ...]
+    current_version: str = "legacy"
+    target_version: str = "legacy"
+    migrations: tuple[tuple[str, Optional[str]], ...] = ()
 
 
 def run_git(cwd: Path, *args: str) -> subprocess.CompletedProcess[str]:
     env = os.environ.copy()
     env["GIT_TERMINAL_PROMPT"] = "0"
+    env["GIT_OPTIONAL_LOCKS"] = "0"
     return subprocess.run(
         ["git", *args],
         cwd=cwd,
@@ -240,13 +246,39 @@ def inspect_remote(repo: Path, local_commit: str, origin_url: str) -> UpdatePlan
         blockers = []
         if relation in {"local-ahead", "diverged"}:
             blockers.append(f"本地与远端关系为 {relation}，不能自动更新")
-        deleted = [
-            change.path
-            for change in changes
-            if change.status.startswith("D") and not is_allowed_remote_deletion(change.path)
-        ]
-        if deleted:
-            blockers.append("远端更新包含未授权删除: " + ", ".join(deleted[:20]))
+        deleted = {change.path for change in changes if change.status.startswith("D")}
+        approved, current_release, target_release = {}, {"version": "legacy"}, {"version": "legacy"}
+
+        def optional_text(commit, path):
+            response = run_git(mirror, "show", f"{commit}:{path}")
+            return response.stdout if response.returncode == 0 else None
+
+        def blob_hash(side, path):
+            commit = local_commit if side == "old" else remote_commit
+            response = subprocess.run(["git", "show", f"{commit}:{path}"], cwd=mirror,
+                                      stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
+            return hashlib.sha256(response.stdout).hexdigest() if response.returncode == 0 else None
+
+        release_text = optional_text(remote_commit, RELEASE_PATH)
+        try:
+            current_release = parse_release(optional_text(local_commit, RELEASE_PATH), OFFICIAL_REPOSITORY)
+            target_release = parse_release(release_text, OFFICIAL_REPOSITORY)
+            old_version, new_version = current_release["version"], target_release["version"]
+            if old_version != "legacy" and (new_version == "legacy" or tuple(map(int, new_version.split("."))) < tuple(map(int, old_version.split(".")))):
+                raise ValueError("远端发布版本降级，停止更新")
+            if old_version != "legacy" and old_version == new_version and local_commit != remote_commit:
+                raise ValueError("远端内容已变但发布版本未递增，停止更新")
+            if release_text is not None:
+                old_files = parse_source_lock(optional_text(local_commit, LOCK_PATH))
+                new_files = parse_source_lock(optional_text(remote_commit, LOCK_PATH))
+                approved = approved_retirements(target_release, deleted, old_files, new_files,
+                                                blob_hash, is_protected_path)
+        except (ValueError, TypeError, KeyError) as exc:
+            blockers.append("版本迁移检查失败: " + str(exc))
+        unauthorized = sorted(path for path in deleted if path not in approved
+                              and not (release_text is None and is_allowed_remote_deletion(path)))
+        if unauthorized:
+            blockers.append("远端更新包含未授权删除: " + ", ".join(unauthorized[:20]))
 
         tree = git_output(mirror, "ls-tree", "-r", "-z", remote_commit)
         profile_result = run_git(mirror, "show", f"{remote_commit}:config/distribution.json")
@@ -296,6 +328,9 @@ def inspect_remote(repo: Path, local_commit: str, origin_url: str) -> UpdatePlan
             relation=relation,
             changes=changes,
             blockers=tuple(dict.fromkeys(blockers)),
+            current_version=current_release["version"],
+            target_version=target_release["version"],
+            migrations=tuple(sorted(approved.items())),
         )
 
 
@@ -303,6 +338,18 @@ def build_plan(repo: Path) -> UpdatePlan:
     local_commit, origin_url = ensure_clean_main(repo)
     plan = inspect_remote(repo, local_commit, origin_url)
     blockers = list(plan.blockers)
+    retired = {path for path, _ in plan.migrations}
+    roots = {PurePosixPath(*PurePosixPath(path).parts[:3]).as_posix() for path in retired
+             if PurePosixPath(path).parts[:2] == (".workbuddy", "skills") and len(PurePosixPath(path).parts) > 3}
+    for relative in sorted(roots):
+        tracked = set(git_output(repo, "ls-tree", "-r", "--name-only", "-z", plan.local_commit, "--", relative).split("\0")) - {""}
+        if not tracked or not tracked <= retired:
+            continue
+        allowed = tracked | {parent.as_posix() for path in tracked for parent in PurePosixPath(path).parents}
+        for path in (repo / relative).rglob("*"):
+            if path.is_symlink() or path.relative_to(repo).as_posix() not in allowed:
+                blockers.append("退役Skill目录含额外本机资料，停止迁移: " + relative)
+                break
     for change in plan.changes:
         if not change.status.startswith("A"):
             continue
@@ -316,6 +363,9 @@ def build_plan(repo: Path) -> UpdatePlan:
         relation=plan.relation,
         changes=plan.changes,
         blockers=tuple(dict.fromkeys(blockers)),
+        current_version=plan.current_version,
+        target_version=plan.target_version,
+        migrations=plan.migrations,
     )
 
 
@@ -325,6 +375,9 @@ def print_plan(plan: UpdatePlan) -> None:
     print(f"local_commit: {plan.local_commit}")
     print(f"remote_commit: {plan.remote_commit}")
     print(f"relation: {plan.relation}")
+    print(f"version: {plan.current_version} -> {plan.target_version}")
+    for old, replacement in plan.migrations:
+        print(f"migration: {old} -> {replacement or '(retired)'}")
     print(f"changes: {len(plan.changes)}")
     for change in plan.changes:
         print(f"  {change.status} {change.path}")
