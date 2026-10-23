@@ -57,6 +57,42 @@ class KIEAdapterTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 adapter.generate(prompt='x', references=[Path('/missing-reference')], output_path=Path('/unused'), target=self.target, on_submitted=lambda task: None)
 
+    def test_no_reference_uses_text_model_payload_without_uploads(self):
+        client=self.api.load_shared_client();captured=[]
+        class Response:
+            status_code=200
+            headers={}
+            def json(self):return {'code':200,'data':{'taskId':'text-task'}}
+        class Session:
+            def post(self,url,**kwargs):captured.append(kwargs['json']);return Response()
+        def polled(provider,**kwargs):
+            return {'provider':'kie','model':kwargs['model_id'],'task_id':kwargs['task_id']}
+        with tempfile.TemporaryDirectory() as tmp,patch.object(client,'_provider_value',side_effect=lambda provider,key,names,default='',**kw:{'api_key':'offline-placeholder'}.get(key,default)),patch.object(client,'_build_session',return_value=Session()),patch.object(client.KIEProvider,'_upload_reference_images',side_effect=AssertionError('no upload expected')),patch.object(client.KIEProvider,'_poll_task',polled):
+            result=self.api.KIEAdapter().generate(prompt='免佣活动',references=[],output_path=Path(tmp)/'out.png',target=self.target,on_submitted=lambda task:None)
+        self.assertEqual(captured[0]['model'],'gpt-image-2-text-to-image')
+        self.assertNotIn('input_urls',captured[0]['input'])
+        self.assertNotIn('callBackUrl',captured[0])
+        self.assertEqual(captured[0]['input']['background'],'transparent')
+        self.assertEqual(captured[0]['input']['resolution'],'1K')
+        self.assertEqual(result['model'],'gpt-image-2-text-to-image')
+
+    def test_unknown_text_model_is_rejected_before_network(self):
+        client=self.api.load_shared_client()
+        with patch.object(client,'_provider_value',side_effect=lambda provider,key,names,default='',**kw:{'api_key':'offline-placeholder','text_model':'unsupported-model'}.get(key,default)),patch('requests.sessions.Session.request',side_effect=AssertionError('network forbidden')):
+            with self.assertRaisesRegex(ValueError,'模型'):
+                self.api.KIEAdapter().generate(prompt='x',references=[],output_path=Path('/unused'),target=self.target,on_submitted=lambda task:None)
+
+    def test_text_task_resume_uses_original_model_without_new_submission(self):
+        client=self.api.load_shared_client()
+        captured=[]
+        def polled(provider,**kwargs):captured.append(kwargs);return {'provider':'kie','task_id':kwargs['task_id'],'model':kwargs['model_id']}
+        with patch.object(client,'_provider_value',side_effect=lambda provider,key,names,default='',**kw:{'api_key':'offline-placeholder'}.get(key,default)),patch.object(client.KIEProvider,'_poll_task',polled),patch('requests.sessions.Session.request',side_effect=AssertionError('no new request')):
+            adapter=self.api.KIEAdapter()
+            result=adapter.resume(task_id='existing-text-task',output_path=Path('/unused'),target=self.target,model='gpt-image-2-text-to-image')
+        self.assertEqual(result['model'],'gpt-image-2-text-to-image')
+        self.assertEqual(captured[0]['task_id'],'existing-text-task')
+        self.assertEqual(adapter.submissions,0)
+
     def test_unknown_model_is_rejected_before_any_network_call(self):
         client=self.api.load_shared_client()
         with patch.object(client,'_provider_value',side_effect=lambda provider,key,names,default='',**kw: {'api_key':'offline-placeholder','image_model':'unsupported-model'}.get(key,default)):

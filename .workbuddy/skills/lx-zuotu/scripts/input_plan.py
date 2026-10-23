@@ -12,10 +12,12 @@ SKILL_ROOT = Path(__file__).resolve().parents[1]
 PROJECT_ROOT = SKILL_ROOT.parents[2]
 SPECS_PATH = SKILL_ROOT / 'specs.yaml'
 FIELDS = ('subtitle', 'title', 'selling_points', 'amounts', 'dates', 'rules', 'button')
+DESIGN_FIELDS = ('scene', 'composition')
 ALIASES = dict(zip(
     ('品牌', '活动名', '参考风格', '图片类型', '分类型文案', '副标题', '标题', '卖点', '金额', '日期', '规则小字', '按钮文案'),
     ('brand', 'activity_name', 'reference_set', 'types', 'type_text', *FIELDS),
 ))
+ALIASES.update({'场景': 'scene', '构图': 'composition'})
 
 
 class UniqueLoader(yaml.SafeLoader):
@@ -76,7 +78,7 @@ def load_activity(path: Path) -> dict:
     if path.suffix.lower() not in {'.txt', '.yaml', '.yml'}:
         raise ValueError('需求文件只支持 TXT/YAML')
     activity = normalize_keys(read_yaml(path))
-    allowed = {'brand', 'activity_name', 'reference_set', 'types', 'type_text', *FIELDS}
+    allowed = {'brand', 'activity_name', 'reference_set', 'types', 'type_text', *FIELDS, *DESIGN_FIELDS}
     if set(activity) - allowed:
         raise ValueError('需求包含未定义字段，请对照 runtime.md')
     safe_name(activity.get('activity_name', ''))
@@ -86,17 +88,24 @@ def load_activity(path: Path) -> dict:
         if field in activity:
             activity[field] = text_lines(activity[field])
     activity.setdefault('types', 'all')
-    activity.setdefault('reference_set', 'mayday')
-    safe_name(activity['reference_set'])
+    activity.setdefault('reference_set', None)
+    if activity['reference_set'] is not None:
+        safe_name(activity['reference_set'])
+    for field in DESIGN_FIELDS:
+        if field in activity and (not isinstance(activity[field], str) or not activity[field].strip()):
+            raise ValueError('场景/构图必须为非空文本')
     overrides = activity.get('type_text') or {}
     if not isinstance(overrides, dict):
         raise ValueError('分类型文案必须是映射')
     activity['type_text'] = {}
     for kind, raw in overrides.items():
         value = normalize_keys(raw)
-        if set(value) - set(FIELDS):
+        if set(value) - set(FIELDS + DESIGN_FIELDS):
             raise ValueError('分类型文案含未定义字段')
-        activity['type_text'][kind] = {key: text_lines(item) for key, item in value.items()}
+        for key in DESIGN_FIELDS:
+            if key in value and (not isinstance(value[key], str) or not value[key].strip()):
+                raise ValueError('场景/构图必须为非空文本')
+        activity['type_text'][kind] = {key: text_lines(item) if key in FIELDS else item for key, item in value.items()}
     return activity
 
 
@@ -173,6 +182,8 @@ def build_plan(file: Path, *, types: str | None = None, sizes: str | None = None
                 continue
             values = {**activity, **activity['type_text'].get(kind, {})}
             text = {key: values[key] for key in spec['display_fields'] if values.get(key)}
+            if kind == 'splash' and 'button' not in activity['type_text'].get(kind, {}):
+                text.pop('button', None)
             if not text:
                 raise ValueError('所选图片没有可展示文案')
             targets.append({
@@ -180,6 +191,7 @@ def build_plan(file: Path, *, types: str | None = None, sizes: str | None = None
                 **size, 'type': kind, 'id': target_id, 'max_bytes': spec['max_kb'] * 1024,
                 'filename': f"{spec['name']}-{dimensions}-{activity['activity_name']}.{spec['extension']}",
                 'text': text,
+                **{key: values[key] for key in DESIGN_FIELDS if key in values},
             })
     if wanted is not None and set(wanted) - known_sizes:
         raise ValueError('存在未知图片尺寸')

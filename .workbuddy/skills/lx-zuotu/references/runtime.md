@@ -8,9 +8,11 @@ Python >=3.10；依赖为requests、Pillow、PyYAML，测试使用unittest。工
 
 KIE 复用相邻 `lx-haibao/scripts/image2_client.py` 的 `KIEProvider` 上传、轮询、下载实现，以及 `lxx_share` 的统一配置读取；因此两个 Skill 及 lxx_share 必须同时存在。仅实例化 KIE，不调用带多 provider 回退的 `generate_image`。从本工作区配置读取 `lx_haibao.image_api.kie`，统一入口不继承其他工作区KIE变量，不修改真实配置，不输出值，不运行 provider health check。
 
-适配已核对的 GPT Image 2 图生图协议：参考图 `input_urls`、生成比例 `aspect_ratio`、显式 `resolution`；透明弹窗在 1K 使用 `background=transparent`，其他 1K 图使用 opaque；不转发旧 callback，以免触发额外外部通知。3:1 横条使用 1K；竖版开屏使用 2K。实际像素和清晰度仍须真实验收，不把请求分辨率当成成品证据。
+使用既有GPT Image 2文生图/图生图：无参考图使用配置的text_model；有明确历史图或本次活动母版时使用image_model及input_urls。只允许已核对的gpt-image-2-text-to-image和gpt-image-2-image-to-image，不切换服务商或修改配置。生成比例aspect_ratio、显式resolution保留；透明弹窗在1K使用background=transparent，其他1K图使用opaque；不转发旧callback。3:1横条使用1K，竖版开屏使用2K。未决任务恢复沿用原任务模型，不新建任务。实际像素和清晰度仍须真实验收。
 
 官方依据（2026-10-20 只读核对，未提交任务）：[图生图 API](https://docs.kie.ai/market/gpt/gpt-image-2-image-to-image)、[GPT Image 2 参数限制](https://kie.ai/gpt-image-2)。后者明确 2K/4K 不支持部分比例，背景选项仅支持 1K。规格中配置生成比例，后处理才决定精确像素。
+
+2026-10-23只读核对[文生图API](https://docs.kie.ai/market/gpt/gpt-image-2-text-to-image)与图生图官方请求示例：两者使用同一createTask接口及Bearer鉴权，文生图不带input_urls，图生图带参考图URL。未调用真实生图；本段替代此前强制参考图的阶段规则。
 
 ## 输入格式
 
@@ -20,7 +22,9 @@ TXT 和 YAML 都采用确定性字段映射语法；不使用模型解析输入�
 | --- | --- | --- |
 | brand | 品牌 | 必填，作为品牌语境，不自动增加可见 Logo 或文字 |
 | activity_name | 活动名 | 必填，用于目录和文件名，不能含路径字符 |
-| reference_set | 参考风格 | mayday（默认）或 newyear69；仅决定风格 |
+| reference_set | 参考风格 | 可选，省略或null不使用历史图；显式mayday或newyear69仅参考风格 |
+| scene | 场景 | 可选非空文本，约定主题、场景或避开的元素，不作为画面文字 |
+| composition | 构图 | 可选非空文本，如纯文字、居中、不要主题图；优先于默认构图，不作为画面文字 |
 | types | 图片类型 | all 或类型 key 列表/逗号分隔文本 |
 | subtitle | 副标题 | 可选文本或文本列表 |
 | title | 标题 | 可选文本或文本列表 |
@@ -29,9 +33,15 @@ TXT 和 YAML 都采用确定性字段映射语法；不使用模型解析输入�
 | dates | 日期 | 原文文本或列表，不补年份 |
 | rules | 规则小字 | 原文文本或列表 |
 | button | 按钮文案 | 可选，仅允许对应版式展示 |
-| type_text | 分类型文案 | 按类型 key 明确覆盖上述展示字段 |
+| type_text | 分类型文案 | 按类型key覆盖展示字段；scene/composition可按类型覆盖但不进入画面文字；开屏按钮仅在此显式提供 |
 
 可直接使用 `tests/fixtures/mayday_activity.yaml` 或同名 TXT 查看完整格式。它们逐项转录历史五一样图，用于开发验收，不表示现行活动有效。横条短标题由输入明确提供，不自动缩写；缺字段不显示，某一规格没有任何展示文案则报错。
+
+用户给出长活动时，先由助手提出每个版位实际展示的短文案、构图、按钮及参考图选择，保留关键条件，得到用户确认后再写成输入；不把用户原始长活动直接塞进小图。默认建议：三个Banner突出一个核心利益点，首页左大字右简洁主题图、侧栏更精简、权益中心补必要条件；弹窗强调一件事，开屏以一个视觉中心配醒目标题。用户明确构图优先，不固定按钮、车辆、展台或季节。
+
+未提供button时不绘制按钮、引导箭头或客户端关闭/跳过控件。用户给出button前确认投放位支持对应操作；仅画图不配置跳转。共享button仍不自动进入开屏，开屏需要type_text.splash.button显式选择。brand只作背景语境，不自动渲染品牌名；用户写入title等展示字段的品牌名保留。只绘制各目标JSON文字，按原文连排，不增加空格。scene/composition只控制设计；历史图只借鉴画风，不能继承文字、按钮、季节和活动事实。
+
+通用单标题输入见tests/fixtures/general_activity.yaml，不依赖历史参考图。既有显式reference_set输入继续可用，选错风格、缺文件或hash不符仍停止，不静默转成文生图。参考素材按横/竖family选取，不要求每个输出尺寸都另有一张模板。
 
 ## CLI 和确认流程
 
@@ -47,7 +57,9 @@ python tools/run_skill.py zuotu --sample-only --confirmed --file .workbuddy/skil
 
 `--types` 优先于输入的 types，未传时使用输入或 all。每类默认全部尺寸，`--sizes` 与类型取交集；未知值或空交集报错。后续样张、核验、批量命令必须使用相同需求文件和筛选范围。新增尺寸只改 specs.yaml，不改脚本；新增类型需明确 family、layout、展示字段及参考图。
 
-样张从所选范围各取一张 horizontal/vertical，最多两张；scope 只有弹窗则样张一张，最终两张。默认 full scope 的样张是首页横条和 1242×2208 开屏。已生成活动母版始终排在历史风格图之前；其余图使用同 family 母版。提示词给出中心裁切安全区，最终还必须目视验证原图和压缩候选，切到文字、按钮或主体就判失败并重新生成，不能补画修补。
+样张从所选范围各取一张horizontal/vertical，最多两张；scope只有弹窗则样张一张，最终两张。默认full scope样张是首页横条和1242×2208开屏。有本次活动母版时排在可选历史图之前，其余图优先参考同family母版，只保持视觉主题并分别排版。提示词给出中心裁切安全区，最终必须在实际交付尺寸下看图核对清晰可读、文字准确和主体完整；切到文字、按钮或主体判失败，不补画修补。
+
+2026-10-23取消缺省mayday后，旧需求未显式选图的计划hash可能变化；修改场景/构图同样使旧确认失效。重新预览并使用新的activity_name创建新任务目录，保留旧文件。仅升级代码不会自动重画pending_review、重置attempts或恢复exhausted；先核对旧状态，不能承诺原命令必定生成新图。
 
 样张生成只产生待视觉核验候选。核验通过并向用户展示样张后，用户确认批量才执行：
 
@@ -65,7 +77,7 @@ confirmed 生成和核验写回取得同一活动的跨进程锁，锁内才读�
 
 ## 视觉核验写回
 
-使用当前能看图的执行助手读取每个 `临时图/.../attempt-N.<ext>` 最终文件，同时对照原图、母版和需求文件。逐字核对标题、卖点、金额、日期、规则、按钮；检查新增文案、清晰度、裁切、形状、透明边缘和跨尺寸主体配色。不能通过复制 manifest 中的期望文字伪造“实际观察”。模型标识不可得时如实说明，不能声称使用了某个具体模型。视觉能力不可用时保持 pending_review，报告缺口，不切换到额外付费服务。
+使用当前能看图的执行助手读取每个 `临时图/.../attempt-N.<ext>` 最终文件，同时对照原图、母版和需求文件。逐字核对标题、卖点、金额、日期、规则及有无按钮；按实际尺寸检查可读性、场景/构图、额外文字、裁切、透明边缘和跨尺寸视觉主题。场景/构图符合要求归入layout_correct，实际观察写入notes，不新增默认通过项。不能通过复制manifest期望文字伪造实际观察。模型标识不可得时如实说明，不能声称使用了某个具体模型。视觉能力不可用时保持pending_review，报告缺口，不切换额外付费服务。
 
 在同一活动目录的 `处理日志/` 保存 review JSON。格式如下（下面是未通过的结构示意，所有 observed_text 和判断必须由实际看图获得）：
 

@@ -1,6 +1,6 @@
 interface:
   display_name: "端内宣传图生成"
   short_description: "用KIE生成并严格验收司机端5类8种尺寸宣传图"
-  default_prompt: "使用 $lx-zuotu 读取活动TXT或YAML，先check和dry-run，确认样张后再批量生成，逐张检查最终尺寸、大小、透明和文字，不补画文字或二维码。"
+  default_prompt: "使用 $lx-zuotu 先整理各版位短文案、构图与有无按钮并让用户确认，参考图可选；再check和dry-run、确认样张后批量生成，逐张核对实际尺寸下的可读性、大小、透明和文字，不补画文字或二维码。"
 policy:
   allow_implicit_invocation: false

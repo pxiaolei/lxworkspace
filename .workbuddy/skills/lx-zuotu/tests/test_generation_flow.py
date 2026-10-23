@@ -2,6 +2,7 @@ import json
 import tempfile
 import unittest
 import threading
+from copy import deepcopy
 from unittest.mock import patch
 from pathlib import Path
 
@@ -116,6 +117,94 @@ class GenerationFlowTests(unittest.TestCase):
         self.assertIn('¥50',prompt)
         self.assertNotIn('69小时',prompt)
         self.assertIn('无按钮',prompt)
+
+    def test_title_only_all_layouts_do_not_require_buttons_or_brand_copy(self):
+        for kind in ['home_banner','sidebar_banner','benefit_banner','popup','splash']:
+            row=deepcopy(next(r for r in self.plan['targets'] if r['type']==kind))
+            row['text']={'title':['10月23-25号3天无门槛全免']}
+            prompt=self.cli.build_prompt(self.plan,row)
+            with self.subTest(kind=kind):
+                self.assertNotIn('黄色按钮',prompt)
+                self.assertNotIn('品牌语境：',prompt)
+                self.assertIn('无按钮',prompt)
+                self.assertIn('不自动绘制品牌名称',prompt)
+                self.assertEqual(json.loads(prompt[prompt.index('{\n'):]),row['text'])
+
+    def test_design_requirements_are_separate_from_exact_visible_text(self):
+        row=deepcopy(self.plan['targets'][0])
+        row.update(scene='城市道路，不要樱花',composition='纯文字居中，不要主题图',text={'title':['宏鹄本周免佣']})
+        prompt=self.cli.build_prompt(self.plan,row)
+        self.assertIn('场景要求：城市道路，不要樱花',prompt)
+        self.assertIn('构图要求：纯文字居中，不要主题图',prompt)
+        self.assertIn('优先于默认构图',prompt)
+        self.assertNotIn('三行依次',prompt)
+        self.assertNotIn('同一辆车',prompt)
+        self.assertIn('不要插入额外空格',prompt)
+        self.assertEqual(json.loads(prompt[prompt.index('{\n'):]),{'title':['宏鹄本周免佣']})
+
+    def test_explicit_button_is_rendered_without_inventing_other_copy(self):
+        for kind in ['home_banner','popup','splash']:
+            row=deepcopy(next(r for r in self.plan['targets'] if r['type']==kind))
+            row['text']={'title':['免佣活动'],'button':['了解活动']}
+            prompt=self.cli.build_prompt(self.plan,row)
+            with self.subTest(kind=kind):
+                self.assertNotIn('无按钮',prompt)
+                self.assertIn('仅按button字段绘制按钮',prompt)
+                self.assertEqual(json.loads(prompt[prompt.index('{\n'):]),row['text'])
+
+    def test_no_reference_full_flow_keeps_confirmation_and_review_gates(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            source=Path(tmp)/'general.yaml'
+            source.write_text('brand: 测试品牌\nactivity_name: 通用单标题\ntitle: 本周免佣\n')
+            plan=require(self,'input_plan').build_plan(source)
+            root=Path(tmp)/'activity'; provider=SyntheticProvider()
+            self.assertEqual(self.cli.reference_paths(plan,plan['targets'][0]),[])
+            with self.assertRaises(ValueError):self.cli.generate_batch(plan,root,sample_only=True,confirmed=False,adapter=provider)
+            self.assertFalse(root.exists())
+            sample=self.cli.generate_batch(plan,root,sample_only=True,confirmed=True,adapter=provider)
+            self.assertEqual(provider.calls[0]['references'],[])
+            self.review_pending(root,sample)
+            full=self.cli.generate_batch(plan,root,confirmed=True,adapter=provider)
+            final=self.review_pending(root,full)
+            self.assertEqual(provider.submissions,8)
+            self.assertEqual(final['status'],'complete')
+            self.assertTrue(all(call['references'] for call in provider.calls[2:]))
+
+    def test_explicit_missing_reference_set_does_not_silently_fall_back(self):
+        plan=deepcopy(self.plan);plan['activity']['reference_set']='missing-style'
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp)/'unused';provider=SyntheticProvider()
+            with self.assertRaises(ValueError):self.cli.generate_batch(plan,root,sample_only=True,confirmed=True,adapter=provider)
+            self.assertFalse(root.exists())
+            self.assertEqual(provider.submissions,0)
+
+    def test_interrupted_text_submission_records_model_before_resume(self):
+        class Interrupted(SyntheticProvider):
+            name='kie'
+            def generate(self,**kwargs):
+                self.submissions+=1
+                kwargs['on_submitted']('original-text-task')
+                raise KeyboardInterrupt('stop after task id')
+        with tempfile.TemporaryDirectory() as tmp:
+            source=Path(tmp)/'general.yaml';source.write_text('brand: 测试\nactivity_name: 文生图恢复\ntitle: 标题\ntypes: home_banner\n')
+            plan=require(self,'input_plan').build_plan(source);root=Path(tmp)/'activity'
+            with self.assertRaises(KeyboardInterrupt):
+                self.cli.generate_batch(plan,root,sample_only=True,confirmed=True,adapter=Interrupted())
+            manifest=json.loads((root/'manifest.json').read_text())
+            attempt=manifest['images']['home_banner:690x160']['attempts'][0]
+            self.assertEqual(attempt.get('model'),'gpt-image-2-text-to-image')
+            resumed=[]
+            class ResumeOnly(SyntheticProvider):
+                name='kie'
+                def resume(self,**kwargs):
+                    resumed.append(kwargs)
+                    Image.new('RGB',(690,160),'blue').save(kwargs['output_path'])
+                    return {'provider':'kie','task_id':kwargs['task_id']}
+                def generate(self,**kwargs):raise AssertionError('must not submit again')
+            result=self.cli.generate_batch(plan,root,sample_only=True,confirmed=True,adapter=ResumeOnly())
+            self.assertEqual(resumed[0]['model'],'gpt-image-2-text-to-image')
+            self.assertEqual(resumed[0]['task_id'],'original-text-task')
+            self.assertEqual(len(result['images']['home_banner:690x160']['attempts']),1)
 
     def test_modified_approved_master_blocks_before_any_batch_write_or_call(self):
         with tempfile.TemporaryDirectory() as tmp:

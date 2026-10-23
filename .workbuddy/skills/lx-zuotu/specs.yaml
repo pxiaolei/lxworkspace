@@ -20,7 +20,7 @@ types:
     format: JPEG
     extension: jpg
     max_kb: 1000
-    display_fields: [subtitle, title, selling_points, amounts, dates, rules]
+    display_fields: [subtitle, title, selling_points, amounts, dates, rules, button]
     resolution: 2K
     sizes:
       - {width: 640, height: 960, generation_ratio: '2:3'}

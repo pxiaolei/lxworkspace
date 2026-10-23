@@ -22,7 +22,8 @@ class SafetyGateTests(unittest.TestCase):
         def read_only(path, mode='r', *args, **kwargs):
             if any(char in mode for char in 'wax+'): raise AssertionError('write forbidden')
             return original_open(path, mode, *args, **kwargs)
-        for args in (['--check'], ['--dry-run','--confirmed','--types','all','--file',str(FIXTURE)]):
+        for args in (['--check'], ['--dry-run','--confirmed','--types','all','--file',str(FIXTURE)],
+                     ['--dry-run','--file',str(FIXTURE.parent/'general_activity.yaml')]):
             with self.subTest(args=args), patch.object(require(self,'kie_adapter'),'config_status',return_value={'provider':'kie','api_key_configured':True,'models_configured':True,'model_compatible':True}), patch.object(Path,'open',read_only), patch.object(Path,'mkdir',side_effect=AssertionError('mkdir forbidden')), patch('requests.sessions.Session.request',side_effect=AssertionError('network forbidden')), contextlib.redirect_stdout(io.StringIO()):
                 self.assertEqual(self.cli.main(args), 0)
 

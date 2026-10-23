@@ -74,6 +74,41 @@ class InputPlanTests(unittest.TestCase):
                 p.write_text('brand: 宏鹄\nactivity_name: 测试\ntitle: 免佣\n'+extra+'\n')
                 with self.subTest(extra=extra), self.assertRaises(ValueError): self.api.build_plan(p)
 
+    def test_design_fields_are_not_visible_copy_and_absent_reference_is_neutral(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            p=Path(tmp)/'activity.yaml'
+            p.write_text('品牌: 测试品牌\n活动名: 通用活动\n标题: 本周免佣\n场景: 城市道路，不要花台\n构图: 纯文字居中\n')
+            plan=self.api.build_plan(p)
+            self.assertIsNone(plan['activity']['reference_set'])
+            self.assertEqual(plan['targets'][0]['text'],{'title':['本周免佣']})
+            self.assertEqual(plan['targets'][0]['scene'],'城市道路，不要花台')
+            self.assertEqual(plan['targets'][0]['composition'],'纯文字居中')
+            for extra in ['scene: []','composition: 12','scene: " "','reference_set: false']:
+                p.write_text('brand: 测试\nactivity_name: 无效\ntitle: 标题\n'+extra+'\n')
+                with self.subTest(extra=extra),self.assertRaises(ValueError): self.api.build_plan(p)
+
+    def test_splash_button_and_design_require_explicit_type_override(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            p=Path(tmp)/'activity.yaml'
+            p.write_text('brand: 测试\nactivity_name: 分类型\ntitle: 通用标题\nbutton: 查看详情\nscene: 通用场景\ntype_text:\n  splash:\n    按钮文案: 了解活动\n    场景: 抽象图形\n    构图: 居中\n')
+            plan=self.api.build_plan(p)
+            row=next(r for r in plan['targets'] if r['type']=='splash')
+            self.assertEqual(row['text'],{'title':['通用标题'],'button':['了解活动']})
+            self.assertEqual(row['scene'],'抽象图形')
+            self.assertEqual(row['composition'],'居中')
+            self.assertEqual(plan['targets'][0]['scene'],'通用场景')
+
+    def test_design_change_invalidates_existing_plan_confirmation(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            p=Path(tmp)/'activity.yaml'
+            original='brand: 测试\nactivity_name: 场景变化\ntitle: 标题\n'
+            p.write_text(original+'scene: 城市道路\n')
+            first=self.api.build_plan(p)
+            p.write_text(original+'scene: 纯色背景\n')
+            second=self.api.build_plan(p)
+            self.assertNotEqual(first['plan_hash'],second['plan_hash'])
+            self.assertEqual(first['targets'][0]['text'],second['targets'][0]['text'])
+
     def test_duplicate_source_fields_are_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
             p=Path(tmp)/'input.yaml'

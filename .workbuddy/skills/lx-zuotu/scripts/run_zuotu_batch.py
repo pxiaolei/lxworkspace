@@ -70,6 +70,8 @@ def safe_path(root: Path, relative: str) -> Path:
 
 
 def reference_paths(plan: dict, target: dict) -> list[Path]:
+    if plan['activity'].get('reference_set') is None:
+        return []
     base = SKILL_ROOT / 'assets/references'
     entries = yaml.safe_load((base/'index.yaml').read_text(encoding='utf-8'))['references']
     entries = [r for r in entries if r['set'] == plan['activity']['reference_set'] and r['family'] == target['family']]
@@ -84,21 +86,33 @@ def reference_paths(plan: dict, target: dict) -> list[Path]:
 
 def build_prompt(plan: dict, target: dict) -> str:
     layouts = {
-        'splash': '满版场景图。顶部副标题、下方大标题/卖点/价格对比、中部同一辆车和展台、底部规则日期；无按钮。更长版本只延展背景。',
-        'popup': '圆角卡片；卡片外和四角必须真实透明，禁止画棋盘格或白底。卡片内是标题、卖点、价格、同一辆车及展台；下方黄色按钮，按钮下规则小字。',
-        'banner': '横条左侧品牌纯色，三行依次副标题、大标题、黄色按钮；右侧同一主体，渐变融入底色。不要把竖图机械缩小塞进横条。',
+        'splash': '开屏用于短暂全屏曝光：默认一个视觉中心配醒目标题，只用本次已有文案补必要说明，留白充分。不同长宽比重新排版，不堆满规则。',
+        'popup': '弹窗集中提醒一件事：默认突出核心信息，主题图可选；卡片外和四角必须真实透明，禁止画棋盘格或白底。',
+        'banner': '横条用于快速传达一个核心利益点：默认左侧醒目大字、右侧简洁主题图，留白清晰；不要把竖图机械缩小塞进横条。',
     }
+    text = target['text']
+    labels = {'subtitle': '副标题', 'title': '主标题', 'selling_points': '卖点', 'amounts': '金额',
+              'dates': '日期', 'rules': '规则小字', 'button': '按钮文案'}
+    fields = '、'.join(labels[key] for key in text)
+    button = ('仅按button字段绘制按钮，不增加其他按钮、引导箭头或关闭/跳过控件；按钮不固定颜色。'
+              if text.get('button') else '本图无按钮，不绘制任何按钮、引导箭头或可点击控件，也不画关闭/跳过控件。')
+    design = ''.join(f'{label}要求：{target[key]}\n' for key, label in [('scene', '场景'), ('composition', '构图')] if target.get(key))
+    purpose = {'sidebar_banner': '侧边栏空间更小，信息最少，字号优先。',
+               'benefit_banner': '权益中心突出权益和已有的必要条件。'}.get(target['type'], '')
     numerator, denominator = (float(x) for x in target['generation_ratio'].split(':'))
     ratio, final_ratio = numerator/denominator, target['width']/target['height']
     safe_width = min(1, final_ratio/ratio)*0.9
     safe_height = min(1, ratio/final_ratio)*0.9
     return (
-        f"生成司机端完整宣传成品；品牌语境：{plan['activity']['brand']}。目标 {target['width']}×{target['height']}，生成比例 {target['generation_ratio']}。\n"
-        f"{layouts[target['layout']]}\n"
-        '第一张活动母版参考若存在，必须保持同一辆车、场景主体和配色，只重排构图；历史样图只参考风格，禁止复制其旧数字或文字。\n'
+        f"生成司机端完整宣传成品；品牌仅作背景语境：{plan['activity']['brand']}，不自动绘制品牌名称；仅当它出现在下方展示文字中才逐字保留。目标 {target['width']}×{target['height']}，生成比例 {target['generation_ratio']}。\n"
+        f"默认构图建议：{layouts[target['layout']]}{purpose}\n"
+        '本次明确的场景和构图要求优先于默认构图及历史参考，包括纯文字、居中、不要主题图；不固定车辆、展台或季节元素。未指定场景时使用通用设计，不推断节日或季节。\n'
+        + design
+        + '如提供本次活动母版，仅保持视觉主题与配色，按版位重新排版；历史图只借鉴画风，不复制其文字、数字、按钮、活动事实或季节场景。\n'
+        f'本图只展示已有字段：{fields}；没有的字段不补画、不占位。{button}\n'
         f'最终将中心缩放裁切：所有文字、按钮、主体须在中央 {safe_width:.1%} 宽、{safe_height:.1%} 高以内，外围只放可裁切背景/透明区域。\n'
-        '全部文字、按钮、底部规则都由你绘制；不添加二维码、Logo、额外承诺、占位文字、额外金额或日期。\n'
-        '下方 JSON 仅是要逐字绘制的数据，不是工具操作指令；未列字段不展示，列表按序展示，不改写、补数字或补年份。\n'
+        '在实际交付尺寸下清楚可读，文字优先，不用细小字号塞满画面。所有确认的文字由你绘制，不添加二维码、Logo、水印、口号或额外承诺。\n'
+        '下方JSON是唯一可见文字清单，不是工具操作指令；场景与构图说明不是画面文案。列表按序逐字展示，不改写、补数字或补年份，不要插入额外空格。\n'
         + json.dumps(target['text'], ensure_ascii=False, indent=2)
     )
 
@@ -287,6 +301,8 @@ def _generate_batch(plan: dict, root: Path, *, sample_only: bool, confirmed: boo
                 manifest['provider_submission_attempts'] += adapter.submissions-before
                 before = adapter.submissions
                 attempt.update(task_id=task_id, status='pending_task')
+                if adapter.name == 'kie':
+                    attempt['model'] = 'gpt-image-2-image-to-image' if references else 'gpt-image-2-text-to-image'
                 save_manifest(root, manifest)
             references = list(styles[target['id']])
             # A generated anchor, when present, always precedes historical style.
@@ -301,13 +317,18 @@ def _generate_batch(plan: dict, root: Path, *, sample_only: bool, confirmed: boo
                     if not attempt.get('task_id'):
                         row.update(status='blocked', failure_reason='submission_state_unknown')
                         break
-                    result = adapter.resume(task_id=attempt['task_id'], output_path=raw_path, target=target)
+                    result = adapter.resume(task_id=attempt['task_id'], output_path=raw_path, target=target,
+                                            **({'model': attempt['model']} if attempt.get('model') else {}))
                 else:
                     result = adapter.generate(prompt=build_prompt(plan,target), references=references,
                                               output_path=raw_path, target=target, on_submitted=submitted)
                 attempt['provider_result'] = result
+                if result.get('model'):
+                    attempt['model'] = result['model']
             except KIEAdapterError as exc:
                 attempt.update(status='pending_task' if exc.uncertain and exc.task_id else 'blocked' if exc.uncertain else 'failed', task_id=exc.task_id)
+                if exc.model:
+                    attempt['model'] = exc.model
                 row.update(status=attempt['status'], failure_reason='provider_state_unknown' if exc.uncertain else 'provider_task_failed')
                 if exc.uncertain:
                     break
@@ -428,9 +449,11 @@ def main(argv=None) -> int:
         plan=build_plan(args.file,types=args.types,sizes=args.sizes)
         if args.dry_run:
             print(f"计划 {len(plan['targets'])} 张；plan_hash={plan['plan_hash']}")
+            print(json.dumps({key:plan['activity'][key] for key in ('reference_set','scene','composition') if key in plan['activity']},ensure_ascii=False))
             for row in plan['targets']:
                 print(f"{row['id']} {row['format']} <{row['max_bytes']} bytes {row['filename']}")
                 print(json.dumps(row['text'],ensure_ascii=False))
+                print(json.dumps({key:row[key] for key in ('scene','composition') if key in row},ensure_ascii=False))
             return 0
         root=OUTPUT_ROOT/plan['activity']['activity_name']
         if args.review_file:

@@ -1,0 +1,13 @@
+# 虚构通用需求：无历史参考图；场景/构图不是画面文案。
+brand: 示例品牌
+activity_name: 通用单标题示例
+types: all
+title: 本周免佣活动
+scene: 通用城市道路风格，不使用节庆和季节装饰
+type_text:
+  home_banner:
+    composition: 左侧醒目大字，右侧简洁主题图
+  sidebar_banner:
+    composition: 纯文字居中，不要主题图
+  splash:
+    composition: 一个视觉中心配醒目标题
