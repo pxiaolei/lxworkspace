@@ -111,7 +111,7 @@
       "entrypoint": ".workbuddy/skills/lx-wenda/ask.js",
       "risk": "R3",
       "preview": "default question/chat preview with zero HTTP",
-      "confirmation": "confirmed + expected_preview_hash",
+      "confirmation": "explicit user question authorizes this request; agent supplies confirmed + expected_preview_hash after internal preview, without a second chat confirmation",
       "negative_test": ".workbuddy/skills/lx-wenda/test_safety.js",
       "readback": "independent GET historical_conversation record id/chat/question/answer",
       "status": "blocked-live-readback"
@@ -121,7 +121,7 @@
       "entrypoint": ".workbuddy/skills/lx-wenda/server.js",
       "risk": "R3",
       "preview": "default question/chat preview with zero HTTP",
-      "confirmation": "confirmed + expected_preview_hash",
+      "confirmation": "explicit user question authorizes this request; agent supplies confirmed + expected_preview_hash after internal preview, without a second chat confirmation",
       "negative_test": ".workbuddy/skills/lx-wenda/test_safety.js",
       "readback": "independent GET historical_conversation record id/chat/question/answer",
       "status": "blocked-live-readback"
