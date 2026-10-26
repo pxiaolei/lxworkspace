@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "version": "2026.10.23.3",
+  "version": "2026.10.26.1",
   "repository": "pxiaolei/lxworkspace",
   "minimum_updater_protocol": 1,
   "migrations": [

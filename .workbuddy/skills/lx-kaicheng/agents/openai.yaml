@@ -1,0 +1,6 @@
+interface:
+  display_name: "开城前城市了解"
+  short_description: "查询合作伙伴开城条件、准备材料与城市营商环境"
+  default_prompt: "使用 $lx-kaicheng 查询我要开城的城市，整理开城要求、营商环境及资料缺项，并注明来源。"
+policy:
+  allow_implicit_invocation: true

@@ -9,7 +9,7 @@ import subprocess
 from brand_presets import load_manifest, verify_files
 
 ROOT = Path(__file__).resolve().parents[1]
-EXPECTED_SKILLS = {"lx_shujuku", "lx-yidong", "lx-haibao", "lx-wenda", "lx-kaquan", "lx-tiaozhang", "lx-zuotu", "lx-init", "lx-update", "lxx_share"}
+EXPECTED_SKILLS = {"lx_shujuku", "lx-yidong", "lx-haibao", "lx-wenda", "lx-kaquan", "lx-kaicheng", "lx-tiaozhang", "lx-zuotu", "lx-init", "lx-update", "lxx_share"}
 WORKSPACE_DOCS = {"workspace/README.md", "workspace/08端内宣传图/README.md"}
 
 
@@ -21,7 +21,7 @@ def check(root=ROOT):
     skills = root / ".workbuddy/skills"
     actual = {p.parent.name for p in skills.glob("*/SKILL.md")}
     if actual != EXPECTED_SKILLS:
-        errors.append("Skill 清单不等于首版 10 项")
+        errors.append("Skill 清单不等于当前 11 项")
     lock = json.loads((root / "config/source-lock.json").read_text(encoding="utf-8"))
     try:
         presets = load_manifest(root)
@@ -72,5 +72,5 @@ def check(root=ROOT):
 
 if __name__ == "__main__":
     errors = check()
-    print('\n'.join(errors) if errors else "distribution boundary: pass (10 skills; shared hashes; no private imports; protected local data)")
+    print('\n'.join(errors) if errors else "distribution boundary: pass (11 skills; shared hashes; no private imports; protected local data)")
     raise SystemExit(bool(errors))

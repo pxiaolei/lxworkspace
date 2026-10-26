@@ -1,6 +1,6 @@
 {
   "source_repository": "p-fog",
-  "source_commit": "62c958b16542eeb476189d94cba4d330ed88541e",
+  "source_commit": "fb22d3f5880a694e136e69ebda66db1b61508883",
   "files": {
     ".gitattributes": "4a5e4eb3d1994a48145f90466413e538b2612fec3a58535084c505e2e27a9ddd",
     ".gitignore": "51efebca4ba7c3a1faad9814184cff7ac0cc28686d01195120ee7497b24ae019",
@@ -77,6 +77,10 @@
     ".workbuddy/skills/lx-init/scripts/write_local_config.py": "2e783d90b9b6430c46a7ab7c019e28cb0dc19152e8338c2ed45f09322bfb2822",
     ".workbuddy/skills/lx-init/tests/test_execution_gate.py": "94d00cca1ac9fe891b33af4dc814bc9331877bed5f694f14869859026310f3b9",
     ".workbuddy/skills/lx-init/tests/test_local_config_gui.py": "ca079f6661ca30df679038cf79d2c8acd8e7bd028192ec61c1b241b3015e3e7a",
+    ".workbuddy/skills/lx-kaicheng/SKILL.md": "45d104a3e91d627feaeba55a73a6b76dd5504d4dc72b202596934a0ec9c51e58",
+    ".workbuddy/skills/lx-kaicheng/agents/openai.yaml": "81b03111e70cab4a0fabbdc36618fae64ff47ed51ac2d3e74ba365eeac557aae",
+    ".workbuddy/skills/lx-kaicheng/references/business-environment.md": "60c72c6c9f01db0049f67e522e1b1e7aeb9c39b51f26e2a3e8e4e0b89a813490",
+    ".workbuddy/skills/lx-kaicheng/references/opening-requirements.md": "47d02b133c56514d72bf527eb3b8f6105a4ff922857161ff5b4b449539ee16ca",
     ".workbuddy/skills/lx-kaquan/SKILL.md": "fc09667ba4de0d0173577db58770d606c3734ddccfced30fc736de0b280c1f6e",
     ".workbuddy/skills/lx-kaquan/agents/openai.yaml": "5dfaa1cf4d2c9255c646eaea9606f8cd9892762fac5cacc2802606ff75fdb5d4",
     ".workbuddy/skills/lx-kaquan/assets/feizhang_template.xlsx": "3a707e79dbf6ae0eda9db497ed680370fd81278561e06a89de160c0eb7db9206",
@@ -184,19 +188,19 @@
     ".workbuddy/skills/lxx_share/__init__.py": "ca5fd3cd9926706bad3f5f016ad6171236321a4e26dbf1d1e5c016207e074f7d",
     ".workbuddy/skills/lxx_share/agents/openai.yaml": "9a6154d3cebabde8342113e8021a37b300b568a30a9bc393f2ad89b195943f75",
     ".workbuddy/skills/lxx_share/fog_config.py": "98f41cd92578ffaafe5155e24a9538a410788237db8ae5861f592fa85947a668",
-    "AGENTS.md": "e815087ce10117977f2b573df87b2ba23bf9f20b0bf12c98ced5c51b2e8026eb",
+    "AGENTS.md": "2e5cfb1f158d4137fce6fe76a85e5ef9b16383150690768af9f0ec9ddcce9965",
     "PILOT.md": "80e6094122aec97148392e7581dfc2f90230cc2d9b66365b3b7b8fab4479355f",
-    "README.md": "0b62298120f506e8837b785275e48c4977eccf511e194a290cc19075a4d16427",
+    "README.md": "7ff6bc3a8d42cf9f4a18ffb97f346c69e61ec6ce189a051a7b20a49826825752",
     "VALIDATION.md": "8def0167399261c11d6877806b47f75842715cdb2ef367923600ef575c64ec23",
-    "config/distribution.json": "ebc8f8f3083b65795ba86c9486681eb577f6f33cd043a0c4caf75c1b9ac7f8a1",
+    "config/distribution.json": "5ea6cd8abf3556176d39e64d4097ebd18ddd23c5c03530174ec7a3269e60ec66",
     "config/fog_config.yaml.example": "9218694fe6f5a229956d49203aaaa2a52ec6ba318176f5ccb15905a648a4aad1",
     "config/lx-wenda.json.example": "94be2935de4dc5606a3eef01da9db01a8bc30146d52fb1ccbbfae9af99bbd3b2",
-    "config/workspace-release.json": "fe27d28b8d6727bdd0cc34b908772661904a180bb0406f9349b8cd46677ec787",
+    "config/workspace-release.json": "93d789d0f1bf6fd0d8948b54c303d3af7057a5adfbc05cf7d499254c069805bd",
     "contracts/partner-brand-presets.json": "e7f0942f0f790e687ff1dc42541e34674bae3162a729d2e08e99515be165f6d1",
     "contracts/security/actions.json": "34363689a0db16c059649598005d4994e87f0d80f8ca1b4873a40396b6d5b9af",
     "tools/bootstrap_update.py": "dd42f2791784b3a81a6794f3b67b17fc8fad16afdefdf41015e98c6c12ba7c3b",
     "tools/brand_presets.py": "af7a35f10ce28e73e53593cfcfb34550f3ff9b36be580fca53a49d946211296e",
-    "tools/check_distribution.py": "3ec1768d1ef2083eff25f348e493be5d35ef7d7fe86b14d2b8d6c097832129fb",
+    "tools/check_distribution.py": "7178213f7168fa4ba8818caacf25c5633abc4fd8b0a1319eaadd15123c489c3d",
     "tools/generate_skill_index.py": "9ed606f8d15f600651e2562b8e909cd3af5cb9ae94d1fb6e603d6fbcc70cddce",
     "tools/lx.cmd": "ac2cc8bb5d03e3c870bf649096f40fb148a3783f7bf1d76078803e16a8e186af",
     "tools/run_skill.py": "6cb10163e37ce35bbdaf8b86102433b9a55ddf53339a192ebcedde2a9da8bd7a",
@@ -221,5 +225,8 @@
     "workspace/09\u7aef\u5916\u6d77\u62a5\u56fe/\u5904\u7406\u65e5\u5fd7/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "workspace/09\u7aef\u5916\u6d77\u62a5\u56fe/\u6d3b\u52a8TXT/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "workspace/README.md": "c73a283aca697b60a8616bbcf801e0320bc78e88de44bc376a097bbe6e997665"
+  },
+  "retained_files": {
+    ".workbuddy/skills/lx-wenda/SKILL.md": "62c958b16542eeb476189d94cba4d330ed88541e"
   }
 }
