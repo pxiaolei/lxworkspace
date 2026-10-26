@@ -34,11 +34,14 @@ def main(argv=None):
     env["FOG_CONFIG_PATH"] = str(ROOT / "config/fog_config.yaml")
     env["FOG_PERSONAL_CONFIG_PATH"] = str(ROOT / "config/personal_config.yaml")
     if skill.startswith("wenda"):
+        if any(arg == "--config" or arg.startswith("--config=") for arg in argv):
+            print("项目问答入口只使用本工作区配置；维护配置请使用直接 CLI/MCP 入口")
+            return 1
         node = shutil.which("node")
         if not node:
             print("缺少 Node.js。请运行 python tools/run_skill.py init-runtime 补齐后重试")
             return 1
-        env["MAXKB_CONFIG"] = str(ROOT / "config/lx-wenda.json")
+        env["MAXKB_WORKSPACE_ROOT"] = str(ROOT)
         command = [node, str(SKILLS / "lx-wenda" / ("selftest.js" if skill == "wenda-selftest" else "ask.js"))]
     else:
         venv = SKILLS / "lx-haibao/.venv" / ("Scripts/python.exe" if os.name == "nt" else "bin/python")

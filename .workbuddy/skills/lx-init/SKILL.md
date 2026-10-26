@@ -50,9 +50,9 @@ description: "工作区初始化：确认目录，缺则补齐 Python/Node/Git�
 
 ### 4. 本机配置（必须启动本地输入窗口）
 
-执行 `python tools/run_skill.py init-config --gui`，在运行该命令的电脑上打开真正的凭据输入窗口。不是 WorkBuddy 聊天提问框，也不是 JSON 文件或“已填好”的选项确认。
+在分发工作区执行 `python tools/run_skill.py init-config --gui`，在运行该命令的电脑上打开真正的凭据输入窗口。不是 WorkBuddy 聊天提问框，也不是 JSON 文件或“已填好”的选项确认。私人源仓存在 `config/distribution-manifest.json` 时，通用写入器（含旧文件导入）返回 `status=managed`，不读取凭据、不打开窗口、不写文件；继续按根 AGENT.md §3.1 管理底稿，此状态不证明配置或初始化已完成。
 
-仅展示已启用能力的字段；没有问答配置示例的工作区不要求问答 token。同事侧飞书等额外配置继续通过本仓配置示例与 `python tools/fog.py check` 核对，不把基础三项就绪当成全部集成已验收。
+仅展示已启用能力的字段；问答须由根 `config/distribution.json` 的版本、仓库身份及 skills 白名单启用，且根实际配置或 example 存在才展示 token。未启用时不读写残留问答配置。同事侧飞书等额外配置继续通过本仓配置示例与 `python tools/fog.py check` 核对，不把基础三项就绪当成全部集成已验收。
 
 值由我方线下提前发给用户，用户在本机窗口填写并点击“保存到本机”：
 

@@ -204,6 +204,7 @@ class LocalConfigWriteTest(unittest.TestCase):
         config_dir.mkdir()
         (config_dir / "fog_config.yaml.example").write_bytes(FOG_EXAMPLE.read_bytes())
         (config_dir / "lx-wenda.json.example").write_bytes(WENDA_EXAMPLE.read_bytes())
+        (config_dir / "distribution.json").write_text(json.dumps({"version": 1, "kind": "lxworkspace", "repository": "pxiaolei/lxworkspace", "skills": ["lx-wenda"]}), encoding="utf-8")
         return config_dir
 
     def run_config(self, args):

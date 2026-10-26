@@ -16,6 +16,12 @@ const { loadConfig, preview, ask } = require('./client');
 const SERVER_NAME = 'lx-wenda';
 const SERVER_VERSION = '1.1.1';
 const PROTOCOL_VERSION = '2024-11-05';
+const startupArgs = process.argv.slice(2);
+if (startupArgs.length && (startupArgs.length !== 2 || startupArgs[0] !== '--config' || !require('path').isAbsolute(startupArgs[1]))) {
+  process.stderr.write('[lx-wenda] 仅接受 --config <维护配置绝对路径>\n');
+  process.exit(2);
+}
+const configFile = startupArgs[1] || '';
 function log(...args) { process.stderr.write('[lx-wenda] ' + args.join(' ') + '\n'); }
 
 /* ------------------------------ MCP 协议层 ------------------------------ */
@@ -73,7 +79,7 @@ async function handleToolCall(id, params) {
   }
   try {
     const started = Date.now();
-    const cfg = loadConfig();
+    const cfg = loadConfig({ configFile });
     if (!args.confirmed) {
       const plan = preview(cfg, question, args.chat_id);
       return sendResult(id, { content: [{ type: 'text', text: JSON.stringify(plan) }], structuredContent: plan });
@@ -168,7 +174,7 @@ function main() {
     }
     chain = chain.then(() => handle(msg)).catch((e) => log('处理异常: ' + e.message));
   });
-  rl.on('close', () => process.exit(0));
+  rl.on('close', () => chain.then(() => process.exit(0)));
 }
 
 process.on('uncaughtException', (e) => log('未捕获异常: ' + e.message));

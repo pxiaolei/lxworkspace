@@ -19,11 +19,15 @@ const { loadConfig, preview, ask } = require('./client');
 function logErr(...a) { process.stderr.write('[lx-wenda] ' + a.join(' ') + '\n'); }
 
 function parseArgs(argv) {
-  const out = { question: '', chatId: '', json: false, help: false, confirmed: false, expected_preview_hash: '' };
+  const out = { question: '', chatId: '', configFile: '', json: false, help: false, confirmed: false, expected_preview_hash: '' };
   const rest = [];
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--chat') out.chatId = argv[++i] || '';
+    else if (a === '--config') {
+      out.configFile = argv[++i];
+      if (!out.configFile || out.configFile.startsWith('--')) throw new Error('维护配置参数缺少路径');
+    }
     else if (a === '--confirmed') out.confirmed = true;
     else if (a === '--expected-preview-hash') out.expected_preview_hash = argv[++i] || '';
     else if (a === '--json') out.json = true;
@@ -36,7 +40,7 @@ function parseArgs(argv) {
 }
 
 const USAGE = [
-  '用法: node ask.js "<问题>" [--chat <会话ID>] [--json]',
+  '用法: node ask.js "<问题>" [--chat <会话ID>] [--json] [--config <维护配置绝对路径>]',
   '',
   '示例:',
   '  node ask.js "B端开城怎么操作？"',
@@ -51,7 +55,7 @@ const USAGE = [
     process.stdout.write(USAGE + '\n');
     process.exit(args.help ? 0 : 1);
   }
-  const cfg = loadConfig();
+  const cfg = loadConfig({ configFile: args.configFile });
   if (!args.confirmed) { process.stdout.write(JSON.stringify(preview(cfg, args.question, args.chatId), null, 2) + '\n'); return; }
   const started = Date.now();
   try {
@@ -68,4 +72,4 @@ const USAGE = [
     logErr('失败: ' + e.message);
     process.exit(2);
   }
-})();
+})().catch(e => { logErr('失败: ' + e.message); process.exitCode = 2; });

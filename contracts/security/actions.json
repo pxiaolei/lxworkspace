@@ -90,7 +90,7 @@
       "entrypoint": ".workbuddy/skills/lx-init/scripts/write_local_config.py",
       "risk": "R2",
       "preview": "field status without secret values",
-      "confirmation": "init form file via --from-json or --env-file; inline secrets refused",
+      "confirmation": "local GUI Save writes only blank fields and reads back; cancel writes nothing; question token requires workspace identity/skill enablement; source-managed workspaces never read or write credentials; legacy file import only when explicitly requested",
       "negative_test": "tools/tests/test_init_install_flow.py::LocalConfigWriteTest",
       "readback": "written/kept/missing/blocked without printing secrets",
       "status": "offline-verified"
@@ -125,6 +125,13 @@
       "negative_test": ".workbuddy/skills/lx-wenda/test_safety.js",
       "readback": "independent GET historical_conversation record id/chat/question/answer",
       "status": "blocked-live-readback"
+    },
+    {
+      "id": "wenda.selftest.offline",
+      "entrypoint": ".workbuddy/skills/lx-wenda/selftest.js",
+      "risk": "R0",
+      "preview": "in-memory fictional config; zero real config reads, HTTP requests or persistent writes",
+      "status": "offline-verified"
     },
     {
       "id": "wenda.selftest",

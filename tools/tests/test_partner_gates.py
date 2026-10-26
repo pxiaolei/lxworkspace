@@ -37,7 +37,8 @@ class PartnerGatesTest(unittest.TestCase):
         env = run.call_args.kwargs["env"]
         self.assertNotIn("MAXKB_TOKEN", env)
         self.assertNotIn("KIE_API_KEY", env)
-        self.assertEqual(env["MAXKB_CONFIG"], str(ROOT / "config/lx-wenda.json"))
+        self.assertEqual(env["MAXKB_WORKSPACE_ROOT"], str(ROOT))
+        self.assertNotIn("MAXKB_CONFIG", env)
         self.assertEqual(env["FOG_CONFIG_PATH"], str(ROOT / "config/fog_config.yaml"))
 
     def test_query_preview_and_stale_confirmation_do_not_create_client_or_files(self):

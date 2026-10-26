@@ -391,9 +391,35 @@ def _summary(fog, wenda):
     return "；".join(parts)
 
 
+def source_managed(root):
+    # Even a damaged source marker must not send private credentials to the
+    # generic shared-workspace initializer. No credential file is inspected.
+    return os.path.lexists(root / "config/distribution-manifest.json")
+
+
+def managed_report():
+    return {"status": "managed", "summary": "私人源仓配置由底稿管理；未读取或修改凭据，请按 AGENT.md §3.1 维护"}
+
+
+def wenda_enabled(root):
+    marker = root / "config/distribution.json"
+    try:
+        if _unsafe(root, marker) or not marker.is_file():
+            return False
+        identity = json.loads(marker.read_text(encoding="utf-8"))
+        return (identity.get("version") == 1 and identity.get("kind") in ("FOG", "lxworkspace")
+                and identity.get("repository") == "pxiaolei/" + identity["kind"]
+                and isinstance(identity.get("skills"), list) and "lx-wenda" in identity["skills"]
+                and any(os.path.lexists(root / "config" / name) for name in ("lx-wenda.json", "lx-wenda.json.example")))
+    except (OSError, ValueError, AttributeError):
+        return False
+
+
 def apply_local_config(root, values):
+    if source_managed(root):
+        return managed_report(), False
     fog, fog_unsafe = apply_fog(root, values)
-    if (root / "config/lx-wenda.json.example").is_file() or (root / "config/lx-wenda.json").is_file():
+    if wenda_enabled(root):
         wenda, wenda_unsafe = apply_wenda(root, values.get("wenda_token", ""))
     else:
         wenda, wenda_unsafe = {"action": "not-enabled", "fields": {"token": "not-enabled"}}, False
@@ -403,6 +429,8 @@ def apply_local_config(root, values):
 
 def gui_plan(root, values):
     """Read-only field states and expected output bytes, kept only in memory."""
+    if source_managed(root):
+        return [], {}
     def read(name):
         path = root / "config" / name
         source = path if path.exists() or path.is_symlink() else path.with_name(name + ".example")
@@ -414,7 +442,7 @@ def gui_plan(root, values):
     updated, statuses, _changed = fill_yaml(text, [(p, values.get(name, ""), name) for name, p in FOG_FIELDS])
     expected = {path: updated}
     names = [(name, LABELS[name]) for name, _path in FOG_FIELDS]
-    if any(os.path.lexists(root / "config" / name) for name in ("lx-wenda.json", "lx-wenda.json.example")):
+    if wenda_enabled(root):
         path, text = read("lx-wenda.json")
         updated, status, _changed = fill_wenda(text, values.get("wenda_token", ""))
         expected[path] = updated
@@ -434,6 +462,9 @@ def open_config_window(root, fields):
 def run_gui(root):
     phase = "inspect"
     try:
+        if source_managed(root):
+            print(json.dumps(managed_report(), ensure_ascii=False))
+            return 0
         fields, _expected = gui_plan(root, {})
         phase = "open-window"
         values = open_config_window(root, fields)
@@ -467,11 +498,14 @@ def main(argv=None):
     if error:
         print(error)
         return 2
+    root = Path(parsed["root"]).expanduser() if parsed["root"] else ROOT
+    if not root.is_dir() or root.is_symlink():
+        print("找不到工作区")
+        return 2
+    if source_managed(root):
+        print(json.dumps(managed_report(), ensure_ascii=False))
+        return 0
     if parsed["gui"]:
-        root = Path(parsed["root"]).expanduser() if parsed["root"] else ROOT
-        if not root.is_dir() or root.is_symlink():
-            print("找不到工作区")
-            return 2
         return run_gui(root)
     form = Path(parsed["source"])
     if not form.is_file() or form.is_symlink():
@@ -480,10 +514,6 @@ def main(argv=None):
     values, error = _load_form(form, parsed["kind"])
     if error:
         print(error)
-        return 2
-    root = Path(parsed["root"]).expanduser() if parsed["root"] else ROOT
-    if not root.is_dir() or root.is_symlink():
-        print("找不到工作区")
         return 2
     report, unsafe = apply_local_config(root, values)
     print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))

@@ -11,14 +11,33 @@
 const { spawn } = require('child_process');
 const path = require('path');
 
-const QUESTION = process.argv[2] || 'B端开城怎么操作？';
+const QUESTION = process.argv[2] && !process.argv[2].startsWith('--') ? process.argv[2] : 'B端开城怎么操作？';
 const SERVER = path.join(__dirname, 'server.js');
 
 function send(child, obj) {
   child.stdin.write(JSON.stringify(obj) + '\n');
 }
 
-const child = spawn(process.execPath, [SERVER], {
+const confirmed = process.argv.includes('--confirmed');
+const configIndex = process.argv.indexOf('--config');
+if (configIndex >= 0 && !confirmed) {
+  console.error('离线 selftest 不读取配置；维护配置仅用于另行授权的 confirmed 验收');
+  process.exit(2);
+}
+if (configIndex >= 0 && (!process.argv[configIndex + 1] || !path.isAbsolute(process.argv[configIndex + 1]))) {
+  console.error('维护配置需要绝对路径');
+  process.exit(2);
+}
+// The fixture is confined to this explicit offline test child. Production entry
+// points have no environment switch that can bypass their configuration checks.
+const offlineBootstrap = `
+  const client = require(${JSON.stringify(path.join(__dirname, 'client.js'))});
+  client.loadConfig = () => ({base:'http://127.0.0.1:1',token:'offline-selftest',timeout_ms:120000});
+  for (const mod of ['http','https']) require(mod).request = () => { throw new Error('离线自检禁止网络'); };
+  require(${JSON.stringify(SERVER)});
+`;
+const serverArgs = confirmed ? [SERVER, ...(configIndex < 0 ? [] : ['--config', process.argv[configIndex + 1]])] : ['-e', offlineBootstrap];
+const child = spawn(process.execPath, serverArgs, {
   stdio: ['pipe', 'pipe', 'pipe'],
   env: { ...process.env }
 });
@@ -81,7 +100,7 @@ function handle(msg) {
       return;
     }
     const sc = r.structuredContent || {};
-    if (sc.preview_hash) { console.log('③ tools/call -> preview，服务调用 0 次'); console.log(JSON.stringify(sc, null, 2)); finish(0); return; }
+    if (sc.preview_hash) { console.log('③ tools/call -> 离线协议 preview，服务调用 0 次；未检查真实配置及服务'); console.log(JSON.stringify(sc, null, 2)); finish(0); return; }
     console.log('③ tools/call  -> 成功，用时 ' + sc.cost_seconds + 's，tokens=' + sc.tokens);
     console.log('   会话 ID:', sc.chat_id);
     console.log('   ---- 答案 ----');

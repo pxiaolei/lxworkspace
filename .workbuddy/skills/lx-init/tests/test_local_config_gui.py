@@ -22,6 +22,7 @@ class LocalConfigGuiTests(unittest.TestCase):
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name).resolve()
         (self.root / "config").mkdir()
+        (self.root / "config/distribution.json").write_text(json.dumps({"version": 1, "kind": "lxworkspace", "repository": "pxiaolei/lxworkspace", "skills": ["lx-wenda"]}))
         (self.root / "config/fog_config.yaml.example").write_text(
             'lx_shujuku:\n  api:\n    username: ""\n    password: ""\nlx_haibao:\n  image_api:\n    kie:\n      api_key: ""\n', encoding="utf-8")
         (self.root / "config/lx-wenda.json.example").write_text('{"token":"", "base_url":"https://example.invalid"}\n', encoding="utf-8")
@@ -58,7 +59,7 @@ class LocalConfigGuiTests(unittest.TestCase):
         self.assertEqual(fog['lx_shujuku']['api']['password'], self.values['password'])
         self.assertEqual(fog['lx_haibao']['image_api']['kie']['api_key'], self.values['image_key'])
         self.assertEqual(json.loads((self.root / "config/lx-wenda.json").read_text())['token'], self.values['wenda_token'])
-        self.assertEqual(len(list((self.root / "config").iterdir())), 4)
+        self.assertEqual(len(list((self.root / "config").iterdir())), 5)
 
     def test_existing_values_are_not_displayed_or_overwritten(self):
         target = self.root / 'config/fog_config.yaml'
@@ -138,6 +139,34 @@ class LocalConfigGuiTests(unittest.TestCase):
         self.assertEqual(command[0], sys.executable)
         self.assertTrue(command[2].endswith('write_local_config.py'))
         self.assertEqual(command[3:], ['--gui'])
+
+    def test_private_source_reports_managed_without_reading_or_writing_config(self):
+        (self.root / 'config/distribution-manifest.json').write_text(json.dumps({
+            'version': 1, 'targets': {'FOG': {'repository': 'pxiaolei/FOG'},
+                                    'lxworkspace': {'repository': 'pxiaolei/lxworkspace'}}}))
+        # Invalid bytes make accidental reads fail; they are fictional fixture data.
+        (self.root / 'config/fog_config.yaml').write_bytes(b'\xff')
+        before = {str(p): p.read_bytes() for p in self.root.rglob('*') if p.is_file()}
+        code, output, window = self.run_gui(self.values)
+        self.assertEqual(code, 0)
+        self.assertEqual(json.loads(output)['status'], 'managed')
+        window.assert_not_called()
+        self.assertEqual(before, {str(p): p.read_bytes() for p in self.root.rglob('*') if p.is_file()})
+
+    def test_disabled_profile_ignores_even_existing_wenda_credentials(self):
+        (self.root / 'config/distribution.json').write_text(json.dumps({"version": 1, "kind": "FOG", "repository": "pxiaolei/FOG", "skills": []}))
+        target = self.root / 'config/lx-wenda.json'
+        target.write_bytes(b'\xff')
+        code, output, window = self.run_gui(dict(self.values, wenda_token=''))
+        self.assertEqual(code, 0, output)
+        self.assertNotIn('wenda_token', [f['name'] for f in window.call_args.args[1]])
+        self.assertEqual(target.read_bytes(), b'\xff')
+
+    def test_private_legacy_import_stops_before_reading_form(self):
+        (self.root / 'config/distribution-manifest.json').write_text('{}')
+        with patch.object(writer, '_load_form', side_effect=AssertionError('form read')), contextlib.redirect_stdout(io.StringIO()) as out:
+            self.assertEqual(writer.main(['--root', str(self.root), '--from-json', 'missing.json']), 0)
+        self.assertEqual(json.loads(out.getvalue())['status'], 'managed')
 
 
 if __name__ == '__main__':

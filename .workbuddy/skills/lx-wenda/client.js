@@ -5,17 +5,61 @@ const crypto = require('crypto');
 const http = require('http');
 const https = require('https');
 
-function loadConfig() {
-  const file = process.env.MAXKB_CONFIG || path.join(__dirname, 'config.json');
-  let cfg = { base: 'http://maxkb.sfczhushou.com', token: '', timeout_ms: 120000 };
-  if (fs.existsSync(file)) {
-    try { Object.assign(cfg, JSON.parse(fs.readFileSync(file, 'utf8'))); }
-    catch (_) { throw new Error('问答配置不是合法 JSON，请在本机检查；不回显内容'); }
+function regularFile(file, root) {
+  // Reject both the selected file and linked parent directories, including links
+  // back into the workspace. The workspace itself has already been canonicalized.
+  let current = root || path.parse(file).root;
+  for (const part of path.relative(current, file).split(path.sep)) {
+    current = path.join(current, part);
+    if (fs.lstatSync(current).isSymbolicLink()) throw new Error('linked path');
   }
-  if (process.env.MAXKB_BASE) cfg.base = process.env.MAXKB_BASE;
-  if (process.env.MAXKB_TOKEN) cfg.token = process.env.MAXKB_TOKEN;
-  if (process.env.MAXKB_TIMEOUT_MS) cfg.timeout_ms = Number(process.env.MAXKB_TIMEOUT_MS);
-  cfg.base = String(cfg.base).replace(/\/+$/, '');
+  if (!fs.statSync(file).isFile()) throw new Error('not a regular file');
+}
+
+function workspaceConfig() {
+  const root = fs.realpathSync(path.resolve(__dirname, '../../..'));
+  if (process.env.MAXKB_WORKSPACE_ROOT && fs.realpathSync(process.env.MAXKB_WORKSPACE_ROOT) !== root) {
+    throw new Error('问答工作区上下文不匹配');
+  }
+  const source = path.join(root, 'config/distribution-manifest.json');
+  const managed = path.join(root, 'config/distribution.json');
+  const present = file => { try { fs.lstatSync(file); return true; } catch (e) { if (e.code === 'ENOENT') return false; throw e; } };
+  const isSource = present(source);
+  if (isSource === present(managed)) throw new Error('问答工作区身份缺失或冲突');
+  const marker = isSource ? source : managed;
+  regularFile(marker, root);
+  const identity = JSON.parse(fs.readFileSync(marker, 'utf8'));
+  if (identity.version !== 1) throw new Error('问答工作区身份版本无效');
+  if (isSource) {
+    if (identity.targets?.FOG?.repository !== 'pxiaolei/FOG'
+      || identity.targets?.lxworkspace?.repository !== 'pxiaolei/lxworkspace') throw new Error('问答源仓身份无效');
+    return { root, file: path.join(root, '.workbuddy/skills/lx-wenda/config.json') };
+  }
+  if (!['FOG', 'lxworkspace'].includes(identity.kind) || identity.repository !== 'pxiaolei/' + identity.kind
+    || !Array.isArray(identity.skills) || !identity.skills.includes('lx-wenda')) throw new Error('当前分发工作区未启用问答');
+  return { root, file: path.join(root, 'config/lx-wenda.json') };
+}
+
+function loadConfig({ configFile = '' } = {}) {
+  let cfg;
+  try {
+    let file, root;
+    if (configFile) {
+      if (process.env.MAXKB_WORKSPACE_ROOT || !path.isAbsolute(configFile)) throw new Error('维护配置需要绝对路径及直接入口');
+      file = path.resolve(configFile);
+    } else {
+      ({ file, root } = workspaceConfig());
+      if (process.env.MAXKB_CONFIG && (!path.isAbsolute(process.env.MAXKB_CONFIG)
+        || path.resolve(process.env.MAXKB_CONFIG) !== file)) throw new Error('继承配置与工作区冲突');
+    }
+    regularFile(file, root);
+    cfg = JSON.parse(fs.readFileSync(file, 'utf8'));
+    if (!cfg || typeof cfg !== 'object' || Array.isArray(cfg)
+      || typeof cfg.base !== 'string' || typeof cfg.token !== 'string' || !cfg.token.trim()) throw new Error('配置必填项缺失');
+  } catch (_) {
+    throw new Error('问答配置不可用：请检查工作区身份、固定配置及路径；不回显配置内容，也不自动回退');
+  }
+  cfg = { base: cfg.base.replace(/\/+$/, ''), token: cfg.token, timeout_ms: cfg.timeout_ms ?? 120000 };
   let url;
   try { url = new URL(cfg.base); } catch (_) { throw new Error('问答服务地址无效'); }
   if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password || url.search || url.hash) throw new Error('问答地址必须为不含凭据的 HTTP(S) 地址');
