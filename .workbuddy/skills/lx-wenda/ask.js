@@ -70,6 +70,7 @@ const USAGE = [
     process.exit(0);
   } catch (e) {
     logErr('失败: ' + e.message);
+    if (e.chatId) logErr('会话已创建，可用 --chat ' + e.chatId + ' 追回本次记录');
     process.exit(2);
   }
-})().catch(e => { logErr('失败: ' + e.message); process.exitCode = 2; });
+})().catch(e => { logErr('失败: ' + e.message); if (e.chatId) logErr('会话已创建，可用 --chat ' + e.chatId + ' 追回本次记录'); process.exitCode = 2; });

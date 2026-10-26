@@ -106,7 +106,8 @@ async function handleToolCall(id, params) {
   } catch (e) {
     log('ask failed: ' + e.message);
     sendResult(id, {
-      content: [{ type: 'text', text: '知识库调用失败：' + e.message }],
+      content: [{ type: 'text', text: '知识库调用失败：' + e.message
+        + (e.chatId ? '（会话已创建：' + e.chatId + '，可用 chat_id 追回本次记录）' : '') }],
       isError: true
     });
   }

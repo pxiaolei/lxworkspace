@@ -103,6 +103,20 @@ function isErrorText(text) {
   return /^\s*(?:Exception\s*:\s*)?(?:Error code:\s*\d{3}\s*-\s*(?:\{|AccessDenied\.)|AccessDenied\.\w+\s*$)/i.test(text);
 }
 
+// 流式响应是 text/event-stream，每行 `data: {...}`；content 是增量片段，
+// reasoning_content 是独立的思维链字段，绝不能拼进答案。
+function parseFrames(buffer) {
+  const frames = [];
+  for (const line of buffer.split('\n')) {
+    const text = line.trim();
+    if (!text.startsWith('data:')) continue;
+    const payload = text.slice(5).trim();
+    if (!payload || payload === '[DONE]') continue;
+    try { frames.push(JSON.parse(payload)); } catch (_) { /* 跳过无法解析的帧 */ }
+  }
+  return frames;
+}
+
 function request(cfg, route, method = 'GET', body = null) {
   return new Promise((resolve, reject) => {
     const url = new URL(cfg.base + '/chat/api/' + route);
@@ -117,10 +131,18 @@ function request(cfg, route, method = 'GET', body = null) {
         let parsed = null;
         try { parsed = JSON.parse(buffer); } catch (_) { parsed = null; }
         const hint = errorHint(buffer, parsed, cfg.token);
-        if (res.statusCode !== 200) return reject(new Error('问答 HTTP ' + res.statusCode + hint));
-        if (!parsed) return reject(new Error('问答响应不是合法 JSON' + hint));
+        if (res.statusCode !== 200) {
+          const err = new Error('问答 HTTP ' + res.statusCode + hint);
+          err.httpStatus = res.statusCode;
+          return reject(err);
+        }
+        if (!parsed) {
+          const frames = parseFrames(buffer);
+          if (!frames.length) return reject(new Error('问答响应不是合法 JSON' + hint));
+          return resolve({ kind: 'sse', frames });
+        }
         if (parsed.code !== 200) return reject(new Error('问答业务状态失败' + hint));
-        resolve(parsed.data);
+        resolve({ kind: 'json', data: parsed.data });
       });
     });
     req.on('timeout', () => req.destroy(Object.assign(new Error('问答请求超时'), { code: 'MAXKB_TIMEOUT' })));
@@ -132,13 +154,44 @@ function request(cfg, route, method = 'GET', body = null) {
   });
 }
 
+// 长答案常超过 30 秒；MaxKB 前面的网关在 60 秒内没有数据下行就直接回 504。
+// 改流式后首帧约 2 秒到达、之后持续有数据，网关读超时不会被触发。
+// 返回体统一成 { id, chat_id, content, prompt_tokens, completion_tokens }，
+// 非流式响应仍然兼容，便于离线测试与旧服务。
+async function exchange(cfg, cid, question) {
+  let res;
+  try {
+    res = await request(cfg, 'chat_message/' + encodeURIComponent(cid), 'POST',
+      { message: question, stream: true, re_chat: false });
+  } catch (e) {
+    if (e.httpStatus === 504) {
+      const err = new Error('问答网关超时（HTTP 504）：服务端 60 秒内没有返回内容，答案可能仍在生成或已写入；请勿立即重复提问');
+      err.chatId = cid;
+      throw err;
+    }
+    throw e;
+  }
+  if (res.kind === 'json') return res.data || {};
+  const frames = res.frames;
+  const usage = frames.map(f => f.usage).filter(Boolean).pop() || {};
+  const withRecord = frames.find(f => f.chat_record_id) || {};
+  const withChat = frames.find(f => f.chat_id) || {};
+  return {
+    id: withRecord.chat_record_id || '',
+    chat_id: withChat.chat_id || cid,
+    content: frames.map(f => (typeof f.content === 'string' ? f.content : '')).join(''),
+    prompt_tokens: usage.prompt_tokens || 0,
+    completion_tokens: usage.completion_tokens || 0
+  };
+}
+
 async function ask(cfg, question, chatId = '', authorization = {}) {
   const plan = preview(cfg, question, chatId);
   if (!authorization.confirmed || authorization.expected_preview_hash !== plan.preview_hash) throw new Error('需要 confirmed 与本次 preview_hash，未调用服务');
   if (!cfg.token) throw new Error('缺少问答 token，请在本机配置');
-  let cid = chatId || await request(cfg, 'open');
+  let cid = chatId || (await request(cfg, 'open')).data;
   if (typeof cid !== 'string' || !/^[a-zA-Z0-9-]{1,128}$/.test(cid)) throw new Error('创建会话返回无效 ID；不自动重试');
-  const result = await request(cfg, 'chat_message/' + encodeURIComponent(cid), 'POST', { message: plan.question, stream: false, re_chat: false });
+  const result = await exchange(cfg, cid, plan.question);
   if (!result || !result.id || (result.chat_id && result.chat_id !== cid) || typeof result.content !== 'string') throw new Error('问答结果缺少可读回记录；可能已写入，请人工检查，勿自动重试');
   const answer = result.content.trim();
   if (!answer) throw new Error('未获得有效答案；服务端可能已保存消息，请勿自动重试');
@@ -146,7 +199,7 @@ async function ask(cfg, question, chatId = '', authorization = {}) {
   if (isErrorText(result.content)) throw new Error('问答返回异常文本，已拒绝当作答案 ' + clip(result.content, cfg.token) + '；可能已写入，请人工检查，勿自动重试');
   // The detail endpoint may read process cache. The official history-list
   // serializer queries ChatRecord, so use that independent stored-record surface.
-  const records = await request(cfg, 'historical_conversation_record/' + encodeURIComponent(cid));
+  const records = (await request(cfg, 'historical_conversation_record/' + encodeURIComponent(cid))).data;
   const record = Array.isArray(records) ? records.find(item => item.id === result.id) : null;
   // 返回值与读回比对使用同一归一化口径：服务端存储时可能对首尾空白做处理，
   // 若比对用原始值而返回用 trim 后的值，会把一次成功写入误报成读回不一致。

@@ -217,3 +217,72 @@ test('ordinary network errors remain sanitized', async () => {
     });
   } finally { http.request = original; }
 });
+
+// 网关在 60 秒无数据时直接 504，非流式长答案会撞上；流式让网关持续有数据下行。
+test('answers are streamed and joined from content deltas only', async () => {
+  const frames = [
+    { chat_id: 'chat-test', chat_record_id: 'record-test', content: '', is_end: false, reasoning_content: '思维链片段', usage: { prompt_tokens: 0, completion_tokens: 0 } },
+    { chat_id: 'chat-test', chat_record_id: 'record-test', content: '测试', is_end: false, reasoning_content: '思维链片段', usage: { prompt_tokens: 0, completion_tokens: 0 } },
+    { chat_id: 'chat-test', chat_record_id: 'record-test', content: '答案', is_end: true, reasoning_content: '思维链片段', usage: { prompt_tokens: 11, completion_tokens: 7 } }
+  ];
+  const calls = [];
+  let streamFlag = null;
+  let storedAnswer = '测试答案';
+  const server = http.createServer((req, res) => {
+    calls.push([req.method, req.url]);
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', () => {
+      if (req.url.endsWith('/open')) {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ code: 200, data: 'chat-test' }));
+      }
+      if (req.method === 'POST') {
+        streamFlag = JSON.parse(body).stream;
+        res.writeHead(200, { 'Content-Type': 'text/event-stream;charset=utf-8' });
+        return res.end(frames.map(frame => 'data: ' + JSON.stringify(frame) + '\n\n').join(''));
+      }
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ code: 200, data: [{ id: 'record-test', chat_id: 'chat-test', problem_text: '测试问题', answer_text: storedAnswer }] }));
+    });
+  });
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  const cfg = { base: 'http://127.0.0.1:' + server.address().port, token: 'test-only', timeout_ms: 1000 };
+  const authorization = { confirmed: true, expected_preview_hash: preview(cfg, '测试问题').preview_hash };
+  try {
+    const out = await ask(cfg, '测试问题', '', authorization);
+    assert.equal(streamFlag, true);
+    assert.equal(out.answer, '测试答案');
+    assert.doesNotMatch(out.answer, /思维链/);
+    assert.equal(out.tokens, 18);
+    assert.equal(out.readback_verified, true);
+    assert.equal(calls.length, 3);
+    storedAnswer = '被改写的答案';
+    await assert.rejects(ask(cfg, '测试问题', '', authorization), /读回不一致/);
+  } finally { await new Promise(resolve => server.close(resolve)); }
+});
+
+test('gateway timeout reports a clean hint and keeps the created chat id', async () => {
+  const server = http.createServer((req, res) => {
+    req.resume();
+    req.on('end', () => {
+      if (req.url.endsWith('/open')) {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ code: 200, data: 'chat-test' }));
+      }
+      res.writeHead(504, { 'Content-Type': 'text/html' });
+      res.end('<html>\n<head><title>504 Gateway Time-out</title></head>\n<body><center><h1>504 Gateway Time-out</h1></center><hr><center>nginx</center></body>\n</html>');
+    });
+  });
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  const cfg = { base: 'http://127.0.0.1:' + server.address().port, token: 'test-only', timeout_ms: 1000 };
+  const authorization = { confirmed: true, expected_preview_hash: preview(cfg, '测试问题').preview_hash };
+  try {
+    await assert.rejects(ask(cfg, '测试问题', '', authorization), err => {
+      assert.match(err.message, /问答网关超时（HTTP 504）/);
+      assert.doesNotMatch(err.message, /<html>|nginx/);
+      assert.equal(err.chatId, 'chat-test');
+      return true;
+    });
+  } finally { await new Promise(resolve => server.close(resolve)); }
+});
