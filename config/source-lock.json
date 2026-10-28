@@ -195,17 +195,18 @@
     "config/distribution.json": "5ea6cd8abf3556176d39e64d4097ebd18ddd23c5c03530174ec7a3269e60ec66",
     "config/fog_config.yaml.example": "9218694fe6f5a229956d49203aaaa2a52ec6ba318176f5ccb15905a648a4aad1",
     "config/lx-wenda.json.example": "94be2935de4dc5606a3eef01da9db01a8bc30146d52fb1ccbbfae9af99bbd3b2",
-    "config/workspace-release.json": "5e3bcf2f15bfcf716dbdc9903757ca30cd3233cb3460749d679ab7736054323f",
+    "config/workspace-release.json": "36657d90b5f2b323fab21ac544a9c28c03ec8ab20c1b2c4c10c02ea9cbe7e1a9",
     "contracts/partner-brand-presets.json": "e7f0942f0f790e687ff1dc42541e34674bae3162a729d2e08e99515be165f6d1",
     "contracts/security/actions.json": "c1bb10ffe7110799bff2f2131a6c73fef5eb27c237d94b43692ae28a8a4413dc",
     "tools/bootstrap_update.py": "dd42f2791784b3a81a6794f3b67b17fc8fad16afdefdf41015e98c6c12ba7c3b",
     "tools/brand_presets.py": "af7a35f10ce28e73e53593cfcfb34550f3ff9b36be580fca53a49d946211296e",
     "tools/check_distribution.py": "7178213f7168fa4ba8818caacf25c5633abc4fd8b0a1319eaadd15123c489c3d",
-    "tools/generate_skill_index.py": "39e7c948a6baf1e6945defba2a2d7ae42fb64afa356bcdac673fa29402716736",
+    "tools/generate_skill_index.py": "5cd3d9fbe47dae0d18b195495be29b07868234cbedfe29d1ddfd4258e0a36cb0",
     "tools/lx.cmd": "ac2cc8bb5d03e3c870bf649096f40fb148a3783f7bf1d76078803e16a8e186af",
-    "tools/run_skill.py": "edb32a336419b57171f6f9896db4e65c624954b3c20212487ffd921b8fb2a5b2",
+    "tools/project/generate_skill_index.py": "a9e4621311a1843f7142e2692f4d0fc43d4ba205dc6036f6f8832b2d6cdab58f",
+    "tools/run_skill.py": "ad4b36c6913481d3ab7adfec32a85cd5455a63ede99f96c1322c32541720c3f5",
     "tools/run_tests.py": "dea1667a4a1abbe88cbef63c9920d40aedf4e6c60a6760f87e11fda5b0059611",
-    "tools/test_wenda_config.py": "3da2a2f3099fb749bde0279e102e476e4c6849892ee8a837b1d58fd1d470178c",
+    "tools/test_wenda_config.py": "ba0f9da6101a0da1610d209496db896ad69ff39dd224d51f12df3eb5e446a0bf",
     "tools/tests/test_brand_presets.py": "5a7b7fa23d0fc2dc0bc5674c64909401e4f8b5a1cf807aa8adfc7c04ca8d0abb",
     "tools/tests/test_init_install_flow.py": "0eb778b0295327e1c7e8b32582bd3aeca303a827ba7bb5589d68640841533fc0",
     "tools/tests/test_local_tools.py": "d45fd575ce255b8efe308052cbc409906701f76fa8498d92f85a4e9b3011d7e4",
@@ -232,9 +233,9 @@
       "generator": "release-assistant-v1",
       "source": "distribution/lxworkspace/config/workspace-release.json",
       "source_sha256": "9d0baee5308a467d17311d36598e62b3a9e7b07b91fcda27b9fff571695182a0",
-      "version": "2026.10.28.1"
+      "version": "2026.10.28.2"
     }
   },
-  "source_commit": "2ed14f63ec1edf5a3370266826111f997ed0a250",
+  "source_commit": "07e381602b6e5286656cd0ccf111fb36bd810450",
   "source_repository": "p-fog"
 }
