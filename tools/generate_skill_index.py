@@ -33,8 +33,8 @@ def _unquote(value: str) -> str:
     return value
 
 
-def _read_frontmatter(path: Path) -> dict[str, str]:
-    text = path.read_text(encoding="utf-8")
+def _read_frontmatter(path: Path, text: Optional[str] = None) -> dict[str, str]:
+    text = path.read_text(encoding="utf-8") if text is None else text
     if not text.startswith("---\n"):
         raise ValueError(f"缺少 YAML frontmatter: {path}")
     try:
@@ -67,8 +67,8 @@ def _quoted_yaml_value(text: str, key: str, path: Path) -> str:
     return _unquote(raw)
 
 
-def _read_openai_yaml(path: Path, skill_name: str) -> tuple[str, bool]:
-    text = path.read_text(encoding="utf-8")
+def _read_openai_yaml(path: Path, skill_name: str, text: Optional[str] = None) -> tuple[str, bool]:
+    text = path.read_text(encoding="utf-8") if text is None else text
     implicit = re.findall(r'^\s*allow_implicit_invocation:\s*(true|false)\s*$', text, flags=re.MULTILINE)
     if len(implicit) != 1:
         raise ValueError(f"openai.yaml 的 allow_implicit_invocation 数量应为 1，实际为 {len(implicit)}: {path}")
@@ -82,8 +82,8 @@ def _read_openai_yaml(path: Path, skill_name: str) -> tuple[str, bool]:
     return display_name, implicit[0] == "true"
 
 
-def _validate_execution_contract(path: Path) -> None:
-    text = path.read_text(encoding="utf-8")
+def _validate_execution_contract(path: Path, text: Optional[str] = None) -> None:
+    text = path.read_text(encoding="utf-8") if text is None else text
     required = ["## 执行契约", "### 输入", "### 输出", "### 验收"]
     for heading in required:
         count = sum(1 for line in text.splitlines() if line.strip() == heading)
@@ -116,10 +116,11 @@ def _cell(value: str) -> str:
     return value.replace("|", "\\|").replace("\n", " ").strip()
 
 
-def render_index(records: list[SkillRecord]) -> str:
-    title = ROOT.name
+def render_index(records: list[SkillRecord], title: Optional[str] = None) -> str:
+    explicit_title = title is not None
+    title = title or ROOT.name
     profile = ROOT / "config/distribution.json"
-    if profile.is_file():
+    if not explicit_title and profile.is_file():
         repository = json.loads(profile.read_text(encoding="utf-8")).get("repository")
         if repository in {"pxiaolei/FOG", "pxiaolei/lxworkspace"}:
             title = repository.split("/")[1]
@@ -151,6 +152,30 @@ def render_index(records: list[SkillRecord]) -> str:
         "",
     ])
     return "\n".join(lines)
+
+
+def render_mapped_index(root: Path, files: dict[str, str], repository: str, payloads: Optional[dict[str, bytes]] = None) -> str:
+    """Validate and render a distribution's mapped Skills without writing a tree."""
+    records = []
+    seen = set()
+    for destination, source in sorted(files.items()):
+        path = Path(destination)
+        if len(path.parts) != 4 or path.parts[:2] != (".workbuddy", "skills") or path.name != "SKILL.md":
+            continue
+        text = payloads[destination].decode("utf-8") if payloads is not None else None
+        frontmatter = _read_frontmatter(root / source, text)
+        name = frontmatter["name"]
+        if name != path.parent.name or name in seen:
+            raise ValueError("分发 Skill 名称重复或目录不符")
+        seen.add(name)
+        _validate_execution_contract(root / source, text)
+        agent = (path.parent / "agents/openai.yaml").as_posix()
+        if agent not in files:
+            raise ValueError("分发 Skill 缺少 agents/openai.yaml")
+        agent_text = payloads[agent].decode("utf-8") if payloads is not None else None
+        display, implicit = _read_openai_yaml(root / files[agent], name, agent_text)
+        records.append(SkillRecord(name, frontmatter["description"], display, implicit, destination))
+    return render_index(sorted(records, key=lambda item: item.name.casefold()), repository.split("/")[-1])
 
 
 def main(argv: Optional[list[str]] = None) -> int:

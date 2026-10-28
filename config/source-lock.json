@@ -1,6 +1,4 @@
 {
-  "source_repository": "p-fog",
-  "source_commit": "dae2c9cb238fb6dc91afc3fd25dd7fa2f8b5ff21",
   "files": {
     ".gitattributes": "4a5e4eb3d1994a48145f90466413e538b2612fec3a58535084c505e2e27a9ddd",
     ".gitignore": "51efebca4ba7c3a1faad9814184cff7ac0cc28686d01195120ee7497b24ae019",
@@ -197,13 +195,13 @@
     "config/distribution.json": "5ea6cd8abf3556176d39e64d4097ebd18ddd23c5c03530174ec7a3269e60ec66",
     "config/fog_config.yaml.example": "9218694fe6f5a229956d49203aaaa2a52ec6ba318176f5ccb15905a648a4aad1",
     "config/lx-wenda.json.example": "94be2935de4dc5606a3eef01da9db01a8bc30146d52fb1ccbbfae9af99bbd3b2",
-    "config/workspace-release.json": "9d0baee5308a467d17311d36598e62b3a9e7b07b91fcda27b9fff571695182a0",
+    "config/workspace-release.json": "5e3bcf2f15bfcf716dbdc9903757ca30cd3233cb3460749d679ab7736054323f",
     "contracts/partner-brand-presets.json": "e7f0942f0f790e687ff1dc42541e34674bae3162a729d2e08e99515be165f6d1",
     "contracts/security/actions.json": "c1bb10ffe7110799bff2f2131a6c73fef5eb27c237d94b43692ae28a8a4413dc",
     "tools/bootstrap_update.py": "dd42f2791784b3a81a6794f3b67b17fc8fad16afdefdf41015e98c6c12ba7c3b",
     "tools/brand_presets.py": "af7a35f10ce28e73e53593cfcfb34550f3ff9b36be580fca53a49d946211296e",
     "tools/check_distribution.py": "7178213f7168fa4ba8818caacf25c5633abc4fd8b0a1319eaadd15123c489c3d",
-    "tools/generate_skill_index.py": "9ed606f8d15f600651e2562b8e909cd3af5cb9ae94d1fb6e603d6fbcc70cddce",
+    "tools/generate_skill_index.py": "39e7c948a6baf1e6945defba2a2d7ae42fb64afa356bcdac673fa29402716736",
     "tools/lx.cmd": "ac2cc8bb5d03e3c870bf649096f40fb148a3783f7bf1d76078803e16a8e186af",
     "tools/run_skill.py": "edb32a336419b57171f6f9896db4e65c624954b3c20212487ffd921b8fb2a5b2",
     "tools/run_tests.py": "dea1667a4a1abbe88cbef63c9920d40aedf4e6c60a6760f87e11fda5b0059611",
@@ -215,18 +213,28 @@
     "tools/tests/test_update_local_git.py": "d6b9356a23c0ae2a91a1c0c2ed46499b9d2d2d5d41b36d887f1813c97eb21b44",
     "tools/tests/test_zuotu_partner.py": "ff80f7f17b4ce94ed36041546df9e9f41a7c4709c6486957606b62b43dac10e1",
     "workspace/00todo/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "workspace/00todo/\u5b58\u6863/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "workspace/04\u6570\u636e\u5206\u6790/\u5f02\u52a8\u5206\u6790/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "workspace/04\u6570\u636e\u5206\u6790/\u6570\u636e\u5e93\u67e5\u8be2/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "workspace/06\u540e\u53f0\u64cd\u4f5c/\u5361\u5238\u751f\u6210/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "workspace/06\u540e\u53f0\u64cd\u4f5c/\u8c03\u8d26\u6587\u4ef6/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "workspace/08\u7aef\u5185\u5ba3\u4f20\u56fe/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "workspace/08\u7aef\u5185\u5ba3\u4f20\u56fe/README.md": "d84ef8cf858e094e37c1ec8618da566a21e53a7210306640c46df0f511abfa5a",
-    "workspace/09\u7aef\u5916\u6d77\u62a5\u56fe/\u4e34\u65f6\u56fe/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "workspace/09\u7aef\u5916\u6d77\u62a5\u56fe/\u4ea7\u51fa\u56fe/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "workspace/09\u7aef\u5916\u6d77\u62a5\u56fe/\u5143\u6570\u636e/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "workspace/09\u7aef\u5916\u6d77\u62a5\u56fe/\u5904\u7406\u65e5\u5fd7/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "workspace/09\u7aef\u5916\u6d77\u62a5\u56fe/\u6d3b\u52a8TXT/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "workspace/00todo/存档/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "workspace/04数据分析/异动分析/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "workspace/04数据分析/数据库查询/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "workspace/06后台操作/卡券生成/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "workspace/06后台操作/调账文件/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "workspace/08端内宣传图/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "workspace/08端内宣传图/README.md": "d84ef8cf858e094e37c1ec8618da566a21e53a7210306640c46df0f511abfa5a",
+    "workspace/09端外海报图/临时图/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "workspace/09端外海报图/产出图/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "workspace/09端外海报图/元数据/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "workspace/09端外海报图/处理日志/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "workspace/09端外海报图/活动TXT/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "workspace/README.md": "c73a283aca697b60a8616bbcf801e0320bc78e88de44bc376a097bbe6e997665"
-  }
+  },
+  "generated_files": {
+    "config/workspace-release.json": {
+      "generator": "release-assistant-v1",
+      "source": "distribution/lxworkspace/config/workspace-release.json",
+      "source_sha256": "9d0baee5308a467d17311d36598e62b3a9e7b07b91fcda27b9fff571695182a0",
+      "version": "2026.10.28.1"
+    }
+  },
+  "source_commit": "2ed14f63ec1edf5a3370266826111f997ed0a250",
+  "source_repository": "p-fog"
 }

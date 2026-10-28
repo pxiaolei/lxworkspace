@@ -1,55 +1,55 @@
 {
-  "schema_version": 1,
-  "version": "2026.10.26.3",
-  "repository": "pxiaolei/lxworkspace",
-  "minimum_updater_protocol": 1,
   "migrations": [
     {
       "id": "rename-lx-diaozhang-to-lx-tiaozhang",
       "retire": [
         {
-          "path": ".workbuddy/skills/lx-diaozhang/SKILL.md",
           "old_sha256": [
             "5990ddc74e8660868b68aeee9b58ce5b32e4c2cd2059326e1cf952a3d19f612b"
           ],
+          "path": ".workbuddy/skills/lx-diaozhang/SKILL.md",
           "replacement": ".workbuddy/skills/lx-tiaozhang/SKILL.md"
         },
         {
-          "path": ".workbuddy/skills/lx-diaozhang/agents/openai.yaml",
           "old_sha256": [
             "edaf74993a3cf2b5387c5e2983bacc929b5a277fbcb6ab5db1ed0a922358eced"
           ],
+          "path": ".workbuddy/skills/lx-diaozhang/agents/openai.yaml",
           "replacement": ".workbuddy/skills/lx-tiaozhang/agents/openai.yaml"
         },
         {
-          "path": ".workbuddy/skills/lx-diaozhang/assets/credit_template.csv",
           "old_sha256": [
             "cf4fa7289cadb230d0ac59b6bb76837202810162ac854102a3fbbddab9046bb1"
           ],
+          "path": ".workbuddy/skills/lx-diaozhang/assets/credit_template.csv",
           "replacement": ".workbuddy/skills/lx-tiaozhang/assets/credit_template.csv"
         },
         {
-          "path": ".workbuddy/skills/lx-diaozhang/assets/debit_template.csv",
           "old_sha256": [
             "b9aaed3a0a085a8b47cbc2910555c13cbad201f5ebfbff4bd0918407b77950a0"
           ],
+          "path": ".workbuddy/skills/lx-diaozhang/assets/debit_template.csv",
           "replacement": ".workbuddy/skills/lx-tiaozhang/assets/debit_template.csv"
         },
         {
-          "path": ".workbuddy/skills/lx-diaozhang/scripts/generate_adjustment.py",
           "old_sha256": [
             "a9d0f709ea901683f3f13ddbf326edc79289aa288d74ed049ff0e2678355d90b"
           ],
+          "path": ".workbuddy/skills/lx-diaozhang/scripts/generate_adjustment.py",
           "replacement": ".workbuddy/skills/lx-tiaozhang/scripts/generate_adjustment.py"
         },
         {
-          "path": ".workbuddy/skills/lx-diaozhang/tests/test_generate_adjustment.py",
           "old_sha256": [
             "c8aaf39fb3cd07fee14c7758279148380080e1411a1176da2d9a4d6779bf8471"
           ],
+          "path": ".workbuddy/skills/lx-diaozhang/tests/test_generate_adjustment.py",
           "replacement": ".workbuddy/skills/lx-tiaozhang/tests/test_generate_adjustment.py"
         }
       ]
     }
-  ]
+  ],
+  "minimum_updater_protocol": 1,
+  "repository": "pxiaolei/lxworkspace",
+  "schema_version": 1,
+  "version": "2026.10.28.1"
 }
