@@ -166,6 +166,8 @@ def is_protected_path(raw_path: str, managed_brands=()) -> bool:
         return raw_path not in managed_brands
     if OFFICIAL_REPOSITORY == "pxiaolei/lxworkspace" and lowered.startswith(".workbuddy/skills/lx-haibao/brands/") and path.suffix.casefold() == ".yaml":
         return raw_path not in managed_brands
+    if name == "ticket_cache.json" or name.startswith(".login-"):
+        return True
     if lowered in exact:
         return True
     if name.startswith(".env") and name != ".env.example":

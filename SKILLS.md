@@ -2,14 +2,17 @@
 
 > 本文件由 `python3 tools/generate_skill_index.py` 根据真实目录生成；不要手工维护 Skill 清单。具体流程、输入输出和安全边界以各 Skill 的 `SKILL.md` 为准。
 
-当前共 11 个 Skill。`显式` 表示 `allow_implicit_invocation: false`，必须由用户明确点名或确认后使用。
+当前共 14 个 Skill。`显式` 表示 `allow_implicit_invocation: false`，必须由用户明确点名或确认后使用。
 
 | Skill | 显示名 | 调用策略 | 入口 | 描述 |
 | --- | --- | --- | --- | --- |
+| `lx-cheliang` | 司机车辆信息查询 | 显式 | [`SKILL.md`](.workbuddy/skills/lx-cheliang/SKILL.md) | 批量查询宏鹄 SaaS 司机车辆的车牌、车主、VIN、车系和颜色，支持多车；输入必须为司机ID表，默认预览。 |
 | `lx-haibao` | 端外海报生成 | 显式 | [`SKILL.md`](.workbuddy/skills/lx-haibao/SKILL.md) | 司机活动海报生成。用于从城市活动 TXT 生成已配置品牌的司机活动海报；按 check、dry-run、confirmed sample/full generation 执行；自动按 TXT 文件名识别品牌；共享工作区默认只使用 KIE 图片 Provider；默认 hybrid 模式把模板图和真实 Logo 传给模型生成海报主体，再由脚本贴入真实二维码并逐张验证。 |
 | `lx-init` | 初始化工作区 | 显式 | [`SKILL.md`](.workbuddy/skills/lx-init/SKILL.md) | 工作区初始化：确认目录，缺则补齐 Python/Node/Git，安装项目依赖，并启动本机窗口填写账号配置。仅在用户明确要求初始化、安装工作区或 lx-init 时使用。 |
 | `lx-kaicheng` | 开城前城市了解 | 可隐式路由 | [`SKILL.md`](.workbuddy/skills/lx-kaicheng/SKILL.md) | 合作伙伴开城前城市信息查询。当用户说“我要开xx城市”、询问开城前置条件、开城材料或城市营商环境时使用；基于随包城市资料回答，不用于后台开关城配置、经营数据查询或开城后的异动分析。 |
 | `lx-kaquan` | 卡券文件生成 | 可隐式路由 | [`SKILL.md`](.workbuddy/skills/lx-kaquan/SKILL.md) | 按宏鹄原模板生成飞涨卡或免佣卡的批量创建 XLSX，使用已确认默认值，校验用户必填字段和条件约束，保留表头及重要说明并读回验收。用户要求卡券文件、飞涨卡模板、免佣卡模板或 lx-kaquan 时使用。 |
+| `lx-shenfenzheng` | 司机身份证查询 | 显式 | [`SKILL.md`](.workbuddy/skills/lx-shenfenzheng/SKILL.md) | 批量查询并解密宏鹄 SaaS 司机身份证号，输入司机ID表，输出补齐身份证号的新表；默认预览，使用者本人账号登录。 |
+| `lx-sijiyue` | 司机账户余额查询 | 显式 | [`SKILL.md`](.workbuddy/skills/lx-sijiyue/SKILL.md) | 批量查询宏鹄 SaaS 司机账户余额、可提现余额和免密状态，输入司机ID表，默认预览并另存结果。 |
 | `lx-tiaozhang` | 调账 CSV 生成 | 可隐式路由 | [`SKILL.md`](.workbuddy/skills/lx-tiaozhang/SKILL.md) | 生成司机补款或扣款调账 CSV，按自带模板校验必填字段、金额范围与精度，移除输出中的说明行并读回验证。用户要求调账模板、补款文件、扣款文件或 lx-tiaozhang 时使用。 |
 | `lx-update` | 更新工作区 | 显式 | [`SKILL.md`](.workbuddy/skills/lx-update/SKILL.md) | 检查当前工作区绑定仓库的版本，确认完整 commit 后更新并保护本机配置与业务文件。 |
 | `lx-wenda` | 宏鹄产品问答 | 显式 | [`SKILL.md`](.workbuddy/skills/lx-wenda/SKILL.md) | 宏鹄 SaaS 产品知识库问答。当用户询问宏鹄工作台（honghusaas.com/workbench）的产品使用方法、操作步骤、菜单路径、功能说明或后台配置流程时使用。触发词：宏鹄知识库、产品文档、工作台怎么用、配置中心、B端开城、开城/关城、计价配置、城市规则配置、活动怎么配、司机端功能、后台在哪里设置。 |

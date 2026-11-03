@@ -1,0 +1,6 @@
+interface:
+  display_name: "司机身份证查询"
+  short_description: "批量查询并解密宏鹄SaaS司机身份证号，输出补齐列的新表"
+  default_prompt: "使用 $lx-shenfenzheng 先预览本人账号、租户、输入输出范围，确认后单点校验再执行批量，结果读回通过后汇报。"
+policy:
+  allow_implicit_invocation: false

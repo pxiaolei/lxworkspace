@@ -103,3 +103,7 @@ MaxKB token说明依据：[官方对话API文档](https://github.com/1Panel-dev/
 ## 本次发布决定
 
 用户确认伙伴版尚无人下载使用，首批均从当前版全新安装；历史迁移演练仅保留为当时记录，不作为交付步骤。README、AGENTS、PILOT及更新Skill已移除当前旧伙伴迁移要求；默认拒删保护不变。用户已授权两个分发仓提交并推送，远端发布结果另行读回记录。
+
+## 2026-11-03 宏鹄司机查询候选（尚未发布）
+
+源仓N101已接入身份证、车辆及余额三项Skill，能力清单14项；247份工程文件从精确映射构建隔离候选。隔离整包346项Python及13项Node通过，包含21项三Skill专项；分发边界、索引、路径/敏感模式检查通过。候选校验锁明确标为UNCOMMITTED-OFFLINE-CANDIDATE，仅供离线验证，不是已发布来源锁。本轮真实目标仓未prepare/commit/push，真实宏鹄HTTPS登录、Windows/WorkBuddy和真实业务尚未验收。不会因此解除此前真实服务blocked动作。

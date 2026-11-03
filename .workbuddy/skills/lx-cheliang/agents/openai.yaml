@@ -1,0 +1,6 @@
+interface:
+  display_name: "司机车辆信息查询"
+  short_description: "批量查询宏鹄SaaS司机车辆的车牌号、车主、VIN、车系和车身颜色"
+  default_prompt: "使用 $lx-cheliang 先预览本人账号、租户、输入输出范围，确认后单点校验再执行批量，结果读回通过后汇报。"
+policy:
+  allow_implicit_invocation: false

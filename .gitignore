@@ -74,3 +74,7 @@ workspace/**
 !.workbuddy/skills/lx-haibao/brands/weilan.yaml
 !.workbuddy/skills/lx-haibao/brands/xingfuqianwanjia.yaml
 !.workbuddy/skills/lx-haibao/brands/yidahcuxing.yaml
+
+# Per-user Honghu session caches stay local.
+.workbuddy/skills/*/scripts/ticket_cache.json
+.workbuddy/skills/*/scripts/.login-*.tmp

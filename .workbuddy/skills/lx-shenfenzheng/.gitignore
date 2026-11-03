@@ -1,0 +1,4 @@
+.venv/
+__pycache__/
+scripts/ticket_cache.json
+scripts/.login-*.tmp

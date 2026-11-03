@@ -150,6 +150,7 @@ def main(argv=None):
     imports = "requests, PIL, zxingcpp, yaml"
     imports += ", openpyxl" if "openpyxl" in dependency_text else ""
     imports += ", pandas" if "pandas" in dependency_text else ""
+    imports += ", xlrd" if "xlrd" in dependency_text else ""
     subprocess.run([str(python), "-B", "-c", "import " + imports + "; print('runtime imports verified')"], check=True)
     print("runtime installed and read back")
     return 0

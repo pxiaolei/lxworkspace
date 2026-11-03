@@ -15,7 +15,8 @@ def main():
     env["PYTHONIOENCODING"] = "utf-8"
     for name in ("MAXKB_TOKEN", "MAXKB_BASE", "MAXKB_CONFIG", "FOG_CONFIG_PATH", "FOG_PERSONAL_CONFIG_PATH"):
         env.pop(name, None)
-    commands = [[sys.executable, "-B", "-m", "unittest", "discover", "-s", ".workbuddy/skills/lx-init/tests"],
+    commands = [[sys.executable, "-B", "-m", "unittest", "discover", "-s", ".workbuddy/skills/lx-shenfenzheng/tests"],
+                [sys.executable, "-B", "-m", "unittest", "discover", "-s", ".workbuddy/skills/lx-init/tests"],
                 [sys.executable, "-B", "-m", "unittest", "discover", "-s", ".workbuddy/skills/lx-update/tests"],
                 [sys.executable, "-B", "-m", "unittest", "discover", "-s", ".workbuddy/skills/lx_shujuku/tests"],
                 [sys.executable, "-B", "-m", "unittest", "discover", "-s", ".workbuddy/skills/lx-yidong/tests"],

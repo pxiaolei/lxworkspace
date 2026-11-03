@@ -9,7 +9,7 @@ import subprocess
 from brand_presets import load_manifest, verify_files
 
 ROOT = Path(__file__).resolve().parents[1]
-EXPECTED_SKILLS = {"lx_shujuku", "lx-yidong", "lx-haibao", "lx-wenda", "lx-kaquan", "lx-kaicheng", "lx-tiaozhang", "lx-zuotu", "lx-init", "lx-update", "lxx_share"}
+EXPECTED_SKILLS = {"lx_shujuku", "lx-yidong", "lx-haibao", "lx-wenda", "lx-kaquan", "lx-kaicheng", "lx-tiaozhang", "lx-zuotu", "lx-init", "lx-update", "lxx_share", "lx-shenfenzheng", "lx-cheliang", "lx-sijiyue"}
 WORKSPACE_DOCS = {"workspace/README.md", "workspace/08端内宣传图/README.md"}
 
 
@@ -21,7 +21,7 @@ def check(root=ROOT):
     skills = root / ".workbuddy/skills"
     actual = {p.parent.name for p in skills.glob("*/SKILL.md")}
     if actual != EXPECTED_SKILLS:
-        errors.append("Skill 清单不等于当前 11 项")
+        errors.append("Skill 清单不等于当前 14 项")
     lock = json.loads((root / "config/source-lock.json").read_text(encoding="utf-8"))
     try:
         presets = load_manifest(root)
@@ -46,7 +46,7 @@ def check(root=ROOT):
         imports = [alias.name.split('.')[0] for node in ast.walk(tree) if isinstance(node, ast.Import) for alias in node.names]
         imports += [node.module.split('.')[0] for node in ast.walk(tree) if isinstance(node, ast.ImportFrom) and node.module]
         forbidden = set(imports) & forbidden_imports
-        if file.relative_to(skills).parts[0] == "lx-kaquan":
+        if file.relative_to(skills).parts[0] in {"lx-kaquan", "lx-shenfenzheng", "lx-cheliang", "lx-sijiyue"}:
             forbidden.discard("openpyxl")
         if forbidden:
             errors.append("私人依赖进入分发: " + str(file.relative_to(root)))
@@ -64,7 +64,7 @@ def check(root=ROOT):
             if not relative:
                 continue
             path = Path(relative)
-            protected = (relative.startswith("workspace/") and path.name != ".gitkeep" and relative not in WORKSPACE_DOCS) or (relative.startswith(".workbuddy/skills/lx-haibao/brands/") and path.suffix == ".yaml") or (relative.startswith(".workbuddy/skills/lx-haibao/brand-assets/") and path.name != "README.md") or relative in {"config/fog_config.yaml", "config/lx-wenda.json", ".workbuddy/skills/lx-wenda/config.json", ".workbuddy/skills/lx-wenda/_user_meta.json"} or path.name.startswith(".env")
+            protected = (relative.startswith("workspace/") and path.name != ".gitkeep" and relative not in WORKSPACE_DOCS) or (relative.startswith(".workbuddy/skills/lx-haibao/brands/") and path.suffix == ".yaml") or (relative.startswith(".workbuddy/skills/lx-haibao/brand-assets/") and path.name != "README.md") or relative in {"config/fog_config.yaml", "config/lx-wenda.json", ".workbuddy/skills/lx-wenda/config.json", ".workbuddy/skills/lx-wenda/_user_meta.json"} or path.name.startswith(".env") or path.name == "ticket_cache.json" or path.name.startswith(".login-")
             if protected and relative not in presets["files"]:
                 errors.append("真实本地资料被 Git 跟踪: " + relative)
     return errors
@@ -72,5 +72,5 @@ def check(root=ROOT):
 
 if __name__ == "__main__":
     errors = check()
-    print('\n'.join(errors) if errors else "distribution boundary: pass (11 skills; shared hashes; no private imports; protected local data)")
+    print('\n'.join(errors) if errors else "distribution boundary: pass (14 skills; shared hashes; no private imports; protected local data)")
     raise SystemExit(bool(errors))

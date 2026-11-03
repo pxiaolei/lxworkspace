@@ -307,6 +307,66 @@
       "readback": "independent HEAD/origin/main and clean status, then normal update checks",
       "rollback": "Preserve the before commit printed in check and Git history; stop and retain failure state, recover exact engineering files from the old commit only with separate authorization; never reset or touch local configuration/business data automatically.",
       "status": "offline-verified"
+    },
+    {
+      "id": "lx-shenfenzheng.query",
+      "entrypoint": ".workbuddy/skills/lx-shenfenzheng/scripts/fetch_idcards.py",
+      "risk": "R1",
+      "preview": "default no network/cache/output/log writes",
+      "confirmation": "--confirmed with current hash; exact account/tenant; login requires user click in local window",
+      "negative_test": ".workbuddy/skills/lx-shenfenzheng/tests/test_honghu_share.py",
+      "readback": "saved workbook exact cell comparison and SHA256",
+      "status": "offline-verified-live-pending"
+    },
+    {
+      "id": "lx-shenfenzheng.login",
+      "entrypoint": ".workbuddy/skills/lx-shenfenzheng/scripts/login.py",
+      "risk": "R3",
+      "preview": "default no network/cache/output/log writes",
+      "confirmation": "--confirmed with current hash; exact account/tenant; login requires user click in local window",
+      "negative_test": ".workbuddy/skills/lx-shenfenzheng/tests/test_honghu_share.py",
+      "readback": "saved account/tenant cache readback; ticket never printed",
+      "status": "offline-verified-live-pending"
+    },
+    {
+      "id": "lx-cheliang.query",
+      "entrypoint": ".workbuddy/skills/lx-cheliang/scripts/fetch_carinfo.py",
+      "risk": "R1",
+      "preview": "default no network/cache/output/log writes",
+      "confirmation": "--confirmed with current hash; exact account/tenant; login requires user click in local window",
+      "negative_test": ".workbuddy/skills/lx-shenfenzheng/tests/test_honghu_share.py",
+      "readback": "saved workbook exact cell comparison and SHA256",
+      "status": "offline-verified-live-pending"
+    },
+    {
+      "id": "lx-cheliang.login",
+      "entrypoint": ".workbuddy/skills/lx-cheliang/scripts/login.py",
+      "risk": "R3",
+      "preview": "default no network/cache/output/log writes",
+      "confirmation": "--confirmed with current hash; exact account/tenant; login requires user click in local window",
+      "negative_test": ".workbuddy/skills/lx-shenfenzheng/tests/test_honghu_share.py",
+      "readback": "saved account/tenant cache readback; ticket never printed",
+      "status": "offline-verified-live-pending"
+    },
+    {
+      "id": "lx-sijiyue.query",
+      "entrypoint": ".workbuddy/skills/lx-sijiyue/scripts/fetch_balance.py",
+      "risk": "R1",
+      "preview": "default no network/cache/output/log writes",
+      "confirmation": "--confirmed with current hash; exact account/tenant; login requires user click in local window",
+      "negative_test": ".workbuddy/skills/lx-shenfenzheng/tests/test_honghu_share.py",
+      "readback": "saved workbook exact cell comparison and SHA256",
+      "status": "offline-verified-live-pending"
+    },
+    {
+      "id": "lx-sijiyue.login",
+      "entrypoint": ".workbuddy/skills/lx-sijiyue/scripts/login.py",
+      "risk": "R3",
+      "preview": "default no network/cache/output/log writes",
+      "confirmation": "--confirmed with current hash; exact account/tenant; login requires user click in local window",
+      "negative_test": ".workbuddy/skills/lx-shenfenzheng/tests/test_honghu_share.py",
+      "readback": "saved account/tenant cache readback; ticket never printed",
+      "status": "offline-verified-live-pending"
     }
   ]
 }

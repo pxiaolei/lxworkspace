@@ -103,11 +103,15 @@ class ZuotuPartnerTests(unittest.TestCase):
             self.assertEqual(run.call_count, 2)
             install, readback = [call.args[0] for call in run.call_args_list]
             self.assertEqual(install[0], str(python))
-            self.assertEqual(install.count("-r"), 3)
-            for requirement in [init.REQUIREMENTS, init.CARD_REQUIREMENTS, init.ZUOTU_REQUIREMENTS]:
-                self.assertIn(str(requirement), install)
+            expected_requirements = [init.REQUIREMENTS, init.CARD_REQUIREMENTS, init.ZUOTU_REQUIREMENTS] + [
+                ROOT / ".workbuddy/skills" / skill / "requirements.txt"
+                for skill in ("lx-cheliang", "lx-shenfenzheng", "lx-sijiyue")]
+            self.assertEqual([install[index+1] for index, value in enumerate(install) if value == "-r"],
+                             [str(path) for path in expected_requirements])
             self.assertEqual(readback[0], str(python))
             self.assertIn("openpyxl", readback[-1])
+            self.assertIn("pandas", readback[-1])
+            self.assertIn("xlrd", readback[-1])
             self.assertFalse((SKILL / ".venv").exists())
 
     def test_runtime_compatibility_entry_cannot_install_without_preview_hash(self):
